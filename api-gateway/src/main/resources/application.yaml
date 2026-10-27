@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # discovery-locator off: we define routes explicitly below instead of
+          # letting the gateway auto-generate a route per registered service.
+          # Auto-routing is convenient but leaks every service's raw name as a
+          # public path — explicit routes are the SWIFT-routing-table equivalent:
+          # nothing reaches a backend unless we've deliberately wired a path to it.
+          discovery:
+            locator:
+              enabled: false
+          routes:
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/v1/auth/**,/api/v1/admin/auth/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

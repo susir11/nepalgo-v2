@@ -1,0 +1,92 @@
+# Project name prefixes every container/volume/network with "nepalgo",
+# so this stack can never collide with Mero Remit's.
+name: nepalgo
+
+services:
+  postgres:
+    image: postgres:17            # pin the exact minor after Step 1 verification
+    container_name: nepalgo-postgres
+    environment:
+      POSTGRES_DB: nepalgo
+      POSTGRES_USER: nepalgo_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"               # host 5433 -> container 5432 (5432 is likely taken by Mero Remit)
+    volumes:
+      - nepalgo-pgdata:/var/lib/postgresql/data
+      # Scripts here run ONCE, when the data volume is first created.
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nepalgo_admin -d nepalgo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [nepalgo-net]
+
+  pgadmin:
+    image: dpage/pgadmin4:latest  # temporary: pin the exact tag once you confirm the version
+    container_name: nepalgo-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    volumes:
+      - nepalgo-pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [nepalgo-net]
+
+  rustfs:
+    image: rustfs/rustfs:1.0.0   # pinned to the GA release, not :latest
+    container_name: nepalgo-rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console
+    volumes:
+      - nepalgo-rustfs-data:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://127.0.0.1:9000/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [ nepalgo-net ]
+
+  # --- Uncommented service-by-service as each phase builds it. All under profiles: ["app"] ---
+  # eureka-server:        Phase 1  | build: ./eureka-server        | ports: ["8761:8761"]
+  # api-gateway:          Phase 1  | build: ./api-gateway          | ports: ["8080:8080"]
+  # auth-service:         Phase 1  | build: ./auth-service         | ports: ["8081:8081"]
+  # catalog-service:      Phase 2  | build: ./catalog-service      | ports: ["8082:8082"]
+  # booking-service:      Phase 3  | build: ./booking-service      | ports: ["8083:8083"]
+  # payment-service:      Phase 4  | build: ./payment-service      | ports: ["8084:8084"]
+  # legal-service:        Phase 5  | build: ./legal-service        | ports: ["8085:8085"]
+  # notification-service: Phase 8  | build: ./notification-service | ports: ["8086:8086"]
+  # support-service:      Phase 8  | build: ./support-service      | ports: ["8087:8087"]
+  #
+  # Each entry follows the same shape as the Phase 1 services above:
+  #   build: ./<service>
+  #   ports: ["<port>:<port>"]
+  #   networks: [nepalgo-net]
+  #   depends_on: [postgres, eureka-server]  (add api-gateway too once it exists)
+  #   profiles: ["app"]
+  #
+  # mobile-app/ (Flutter, Phase 6) and admin-frontend/ (React+Vite, Phase 7) are not
+  # containerized here — they run with their own native tooling (flutter run,
+  # npm run dev), not docker compose.
+
+volumes:
+  nepalgo-pgdata:
+  nepalgo-pgadmin-data:
+  nepalgo-rustfs-data:
+
+networks:
+  nepalgo-net:

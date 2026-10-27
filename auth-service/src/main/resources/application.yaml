@@ -1,0 +1,52 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/nepalgo
+    username: auth_svc
+    password: auth_dev_pw
+  jpa:
+    hibernate:
+      ddl-auto: validate   # Flyway owns schema changes, Hibernate only verifies
+    open-in-view: false    # avoids the lazy-loading-in-controller anti-pattern
+  flyway:
+    schemas: auth
+    default-schema: auth
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+nepalgo:
+  jwt:
+    customer:
+      private-key-path: ${JWT_CUSTOMER_PRIVATE_KEY_PATH}
+      public-key-path: ${JWT_CUSTOMER_PUBLIC_KEY_PATH}
+      access-token-ttl-minutes: 15
+      refresh-token-ttl-days: 30
+    staff:
+      private-key-path: ${JWT_STAFF_PRIVATE_KEY_PATH}
+      public-key-path: ${JWT_STAFF_PUBLIC_KEY_PATH}
+      access-token-ttl-minutes: 15
+      refresh-token-idle-minutes: 30
+      refresh-token-absolute-hours: 8
+  firebase:
+    project-id: ${FIREBASE_PROJECT_ID}
+    credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  security:
+    totp-encryption-key: ${TOTP_ENCRYPTION_KEY}
+  bootstrap:
+      admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+      admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

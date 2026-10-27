@@ -1,0 +1,28 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: eureka-server
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    # This server is its own registry — it doesn't need to register with
+    # itself or fetch a registry from itself. Both false is standard for
+    # a single-node Eureka setup.
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    # Dev-only: normally Eureka waits ~90s before evicting stale instances,
+    # to tolerate network blips in production. We don't want that lag while
+    # restarting services locally, so both are shortened.
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
