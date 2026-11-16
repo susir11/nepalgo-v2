@@ -1,0 +1,48 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: legal-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/nepalgo
+    username: legal_svc
+    password: legal_dev_pw
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    schemas: legal
+    default-schema: legal
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+nepalgo:
+  jwt:
+    # Defaults match the repo layout (services run with the repo root as working
+    # dir). These are PUBLIC keys: they can only verify tokens, never mint them.
+    staff:
+      public-key-path: ${JWT_STAFF_PUBLIC_KEY_PATH:secrets/staff-public.pem}
+    customer:
+      public-key-path: ${JWT_CUSTOMER_PUBLIC_KEY_PATH:secrets/customer-public.pem}
+  internal:
+    # LOCAL-DEV fallback only; Phase 9 must set INTERNAL_API_KEY and remove it.
+    api-key: ${INTERNAL_API_KEY:nepalgo-local-dev-internal-key}
+  consent:
+    # Client-reported expand/check timestamps older than this are rejected
+    # (stale screen / replayed request), and none may lie in the future
+    # beyond a small clock-skew allowance.
+    max-age-hours: 24
+    clock-skew-seconds: 120

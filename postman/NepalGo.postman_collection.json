@@ -859,25 +859,6 @@
           }
         },
         {
-          "name": "Confirm consent",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/consent"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"consentConfirmed\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
           "name": "Submit payment receipt",
           "request": {
             "method": "POST",
@@ -2023,6 +2004,506 @@
           }
         }
       ]
+    },
+    {
+      "name": "Legal - Public (no auth)",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "Current Terms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/terms/current"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current Privacy Policy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/privacy/current"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Policy Review (3 gated cards)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/policy-review"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "pm.environment.set('termsDocumentId', pm.response.json().termsDocumentId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Published version by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/documents/{{termsDocumentId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Onboarding content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/content/onboarding"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Company profile content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/content/company-profile"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legal - Customer consent (auto token)",
+      "description": "Run 'Legal - Public / Policy Review' first (sets termsDocumentId). Booking must be AWAITING_PAYMENT.",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{customerToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Agree to Terms (Policy Review consent)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/consents"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"termsDocumentId\": \"{{termsDocumentId}}\",\n  \"cancellationMatrix\": {\n    \"expandedAt\": \"{{c_ex}}\",\n    \"checkedAt\": \"{{c_ck}}\"\n  },\n  \"forceMajeureWeather\": {\n    \"expandedAt\": \"{{f_ex}}\",\n    \"checkedAt\": \"{{f_ck}}\"\n  },\n  \"identityLiability\": {\n    \"expandedAt\": \"{{i_ex}}\",\n    \"checkedAt\": \"{{i_ck}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const t = s => new Date(Date.now() - s * 1000).toISOString();",
+                  "pm.variables.set('c_ex', t(90)); pm.variables.set('c_ck', t(80));",
+                  "pm.variables.set('f_ex', t(70)); pm.variables.set('f_ck', t(60));",
+                  "pm.variables.set('i_ex', t(50)); pm.variables.set('i_ck', t(40));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My consents for booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/legal/consents?bookingId={{bookingId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login: Firebase sign-in -> /firebase/exchange -> save customerToken.",
+              "if (isExpired(env('customerToken'))) {",
+              "  pm.sendRequest({",
+              "    url: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + env('firebaseApiKey'),",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('customerEmail'), password: env('customerPassword'), returnSecureToken: true }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('Customer auto-login: Firebase sign-in failed', err || res.text()); return; }",
+              "    pm.sendRequest({",
+              "      url: env('authUrl') + '/api/v1/auth/firebase/exchange',",
+              "      method: 'POST', header: json,",
+              "      body: { mode: 'raw', raw: JSON.stringify({ idToken: res.json().idToken }) }",
+              "    }, (err2, res2) => {",
+              "      if (err2 || res2.code !== 200) { console.error('Customer auto-login: exchange failed', err2 || res2.text()); return; }",
+              "      const j = res2.json();",
+              "      pm.environment.set('customerToken', j.accessToken);",
+              "      pm.environment.set('customerRefreshToken', j.refreshToken);",
+              "    });",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legal - Policy Content Manager (SUPER_ADMIN)",
+      "description": "Draft -> preview -> publish. Published versions are immutable (API + DB trigger).",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{adminToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Terms version history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/terms/versions"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Terms draft (copies current; override fields)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/terms/drafts"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changeSummary\": \"Fill in company legal name and contact\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "pm.environment.set('legalDraftId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preview draft",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit draft",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"changeSummary\": \"Edited draft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish draft",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}/publish"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete draft",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
+            }
+          }
+        },
+        {
+          "name": "Consents of booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/legal/consents?bookingId={{bookingId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Onboarding versions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/content/onboarding/versions"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create company-profile draft",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/content/company-profile/drafts"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": {\n    \"legalName\": \"NepalGo Travels Pvt. Ltd.\",\n    \"registrationNumber\": \"123456/080/081\",\n    \"registeredAddress\": \"Thamel, Kathmandu, Nepal\",\n    \"supportEmail\": \"support@example.com\",\n    \"supportWhatsApp\": \"+977-98XXXXXXXX\",\n    \"website\": \"https://example.com\",\n    \"about\": \"Kathmandu-based team that hand-builds trips across Nepal.\"\n  },\n  \"changeSummary\": \"Real company details\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "pm.environment.set('contentDraftId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish content draft",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{legalUrl}}/api/admin/content/versions/{{contentDraftId}}/publish"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
@@ -2034,6 +2515,11 @@
     {
       "key": "gatewayUrl",
       "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "legalUrl",
+      "value": "http://localhost:8085",
       "type": "string"
     }
   ]

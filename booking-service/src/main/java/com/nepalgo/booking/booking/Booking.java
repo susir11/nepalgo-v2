@@ -92,8 +92,7 @@ public class Booking {
     @Column(name = "payment_receipt_code", length = 100)
     private String paymentReceiptCode;
 
-    @Column(name = "consent_confirmed", nullable = false)
-    private boolean consentConfirmed = false;
+    // (consent_confirmed placeholder removed in V5: legal-service owns ConsentRecord)
 
     @Column(name = "rejection_reason", columnDefinition = "TEXT")
     private String rejectionReason;

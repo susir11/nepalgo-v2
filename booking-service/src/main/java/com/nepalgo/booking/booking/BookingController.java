@@ -28,11 +28,8 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getById(id, customerId));
     }
 
-    @PostMapping("/{id}/consent")
-    public ResponseEntity<BookingResponse> confirmConsent(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id, @RequestBody ConfirmConsentRequest request) {
-        Long customerId = Long.parseLong(jwt.getSubject());
-        return ResponseEntity.ok(bookingService.confirmConsent(customerId, id));
-    }
+    // (POST /{id}/consent removed in Phase 5: the app now posts the Policy Review
+    //  consent to legal-service, POST /api/legal/consents)
 
     // Spec 8, Step 3: an actual image FILE (multipart "file") plus the typed
     // transaction code ("paymentReceiptCode") — never a pasted link.

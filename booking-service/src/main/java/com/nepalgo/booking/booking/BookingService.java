@@ -3,6 +3,7 @@ package com.nepalgo.booking.booking;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nepalgo.booking.client.CatalogClient;
 import com.nepalgo.booking.client.PaymentClient;
+import com.nepalgo.booking.client.LegalClient;
 import com.nepalgo.booking.dto.BookingResponse;
 import com.nepalgo.booking.dto.CreateBookingRequest;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class BookingService {
     private final ObjectMapper objectMapper;
     private final CancellationTierCalculator cancellationTierCalculator;
     private final PaymentClient paymentClient;
+    private final LegalClient legalClient;
 
     @Transactional
     public BookingResponse create(Long customerId, CreateBookingRequest request) {
@@ -106,7 +108,7 @@ public class BookingService {
                 b.getCustomerId(), b.getDestinationId(), b.getDestinationNameSnapshot(), b.getItinerarySnapshot(),
                 b.getPartySize(), b.getArrivalDate(), b.getDurationDays(), b.isGuideRequested(), b.isPorterRequested(),
                 b.getSpecialRequestText(), b.getLeadBookerLegalName(), b.getLeadBookerPassportNumber(), b.getLeadBookerEmail(),
-                b.isConsentConfirmed(), b.getPaymentReceiptId(), b.getPaymentReceiptCode(), b.getRejectionReason(),
+                b.getPaymentReceiptId(), b.getPaymentReceiptCode(), b.getRejectionReason(),
                 b.getInternalNotes(), b.getCancellationTier(), b.getCancellationRefundPercent(), b.getCreatedAt());
     }
 
@@ -259,18 +261,6 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse confirmConsent(Long customerId, Long bookingId) {
-        Booking booking = getBookingOrThrow(bookingId);
-        requireOwnership(booking, customerId);
-        requireStatus(booking, BookingStatus.AWAITING_PAYMENT);
-        // D-placeholder: a real ConsentRecord/TermsVersion check arrives in
-        // Phase 5 — for now this just flips a boolean on the booking itself.
-        booking.setConsentConfirmed(true);
-        bookingRepository.save(booking);
-        return toResponse(booking);
-    }
-
-    @Transactional
     public BookingResponse submitPaymentReceipt(Long customerId, Long bookingId, String receiptCode,
                                                 org.springframework.web.multipart.MultipartFile file) {
         Booking booking = getBookingOrThrow(bookingId);
@@ -281,11 +271,15 @@ public class BookingService {
             // Server-side guard: you can't pay a bill that hasn't been issued yet.
             throw new InvalidBookingStateException("The bill for this booking has not been issued yet");
         }
-        if (!booking.isConsentConfirmed()) {
-            // Mirrors the spec's real intent (Step 3 must check a confirmed
-            // consent record before accepting payment) even though the
-            // underlying consent mechanism itself is still a placeholder.
-            throw new InvalidBookingStateException("Consent must be confirmed before submitting payment");
+        // Spec 8 Step 3: verify SERVER-SIDE that a ConsentRecord exists for this
+        // booking against the CURRENT Terms version — whatever screen the app showed.
+        // legal-service owns consent; if it can't answer we refuse (fail-closed).
+        LegalClient.ConsentCheck consent = legalClient.checkConsent(bookingId, customerId);
+        if (!consent.valid()) {
+            throw new ConsentRequiredException("CONSENT_FOR_OUTDATED_TERMS".equals(consent.reason())
+                    ? "Our Terms were updated. Please review and agree to the current version before paying."
+                    : "Please review and agree to the Terms (Policy Review) before submitting payment.",
+                    consent.reason(), consent.currentTermsDocumentId());
         }
 
         // All booking-side checks passed: hand the image to payment-service, which

@@ -33,6 +33,10 @@ spring:
               uri: lb://payment-service
               predicates:
                 - Path=/api/bills/**,/api/store-credits/**,/api/admin/bills/**,/api/admin/receipts/**,/api/admin/fx-rates/**,/api/admin/billing-settings/**,/api/admin/store-credits/**,/api/admin/refund-requests/**
+            - id: legal-service
+              uri: lb://legal-service
+              predicates:
+                - Path=/api/legal/**,/api/content/**,/api/admin/legal/**,/api/admin/content/**
             # NOTE: /internal/** is deliberately NOT routed. Service-to-service
             # endpoints are reachable only inside the network (Eureka), never
             # from the internet through the gateway: defence in depth on top of

@@ -57,6 +57,26 @@ public class BookingExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(ConsentRequiredException.class)
+    public ProblemDetail handleConsentRequired(ConsentRequiredException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Consent Required");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "CONSENT_REQUIRED");
+        problem.setProperty("reason", e.getReason());                       // NO_CONSENT / CONSENT_FOR_OUTDATED_TERMS
+        problem.setProperty("currentTermsDocumentId", e.getCurrentTermsDocumentId());
+        return problem;
+    }
+
+    @ExceptionHandler(com.nepalgo.booking.client.LegalClient.LegalUnavailableException.class)
+    public ProblemDetail handleLegalUnavailable(com.nepalgo.booking.client.LegalClient.LegalUnavailableException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+        problem.setTitle("Legal Service Unavailable");
+        problem.setDetail("Nothing was changed. Try again shortly.");
+        problem.setProperty("code", "LEGAL_SERVICE_UNAVAILABLE");
+        return problem;
+    }
+
     @ExceptionHandler(InvalidBookingStateException.class)
     public ProblemDetail handleInvalidState(InvalidBookingStateException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
