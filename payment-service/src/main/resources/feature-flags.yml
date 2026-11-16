@@ -1,0 +1,7 @@
+# Feature flags (spec section 20). Code reads these through FeatureFlags.java;
+# the read-only admin viewer (Phase 7) will read from this same source.
+nepalgo:
+  flags:
+    # OFF: the same admin may propose AND approve an FX rate (or bill).
+    # ON: approver must be a different admin than the proposer.
+    maker-checker-segregation-enforced: false
