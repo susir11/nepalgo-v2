@@ -43,6 +43,10 @@ nepalgo:
   booking:
     payment-window-hours: 48
 
+  flags:
+    # Spec 20 registry: dormant capability, built but OFF.
+    document-upload-enabled: false
+
   internal:
     # Shared secret for /internal/** service-to-service calls. LOCAL-DEV fallback
     # only; Phase 9 must set INTERNAL_API_KEY and remove the fallback.

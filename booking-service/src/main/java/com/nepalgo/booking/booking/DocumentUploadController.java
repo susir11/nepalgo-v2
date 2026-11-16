@@ -17,8 +17,19 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/bookings/{id}/documents")
 public class DocumentUploadController {
 
+    private final FeatureFlagController flags;
+
+    public DocumentUploadController(FeatureFlagController flags) {
+        this.flags = flags;
+    }
+
     @PostMapping
     public ResponseEntity<DocumentUploadAck> upload(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        // Spec 20: document_upload_enabled is OFF -> the endpoint must not be
+        // reachable at all (404, as if it didn't exist), not just hidden in the app.
+        if (!flags.documentUploadEnabled()) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(new DocumentUploadAck(file.getOriginalFilename(), file.getSize(), "received_dormant"));
     }
 

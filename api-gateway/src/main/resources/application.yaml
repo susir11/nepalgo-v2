@@ -20,7 +20,7 @@ spring:
             - id: auth-service
               uri: lb://auth-service
               predicates:
-                - Path=/api/v1/auth/**,/api/v1/admin/auth/**,/api/v1/admin/staff/**
+                - Path=/api/v1/auth/**,/api/v1/admin/auth/**,/api/v1/admin/staff/**,/api/v1/admin/customers/**
             - id: catalog-service
               uri: lb://catalog-service
               predicates:
@@ -28,11 +28,11 @@ spring:
             - id: booking-service
               uri: lb://booking-service
               predicates:
-                - Path=/api/bookings/**,/api/admin/bookings/**
+                - Path=/api/bookings/**,/api/admin/bookings/**,/api/admin/feature-flags/booking
             - id: payment-service
               uri: lb://payment-service
               predicates:
-                - Path=/api/bills/**,/api/store-credits/**,/api/admin/bills/**,/api/admin/receipts/**,/api/admin/fx-rates/**,/api/admin/billing-settings/**,/api/admin/store-credits/**,/api/admin/refund-requests/**
+                - Path=/api/bills/**,/api/store-credits/**,/api/admin/bills/**,/api/admin/receipts/**,/api/admin/fx-rates/**,/api/admin/billing-settings/**,/api/admin/store-credits/**,/api/admin/refund-requests/**,/api/admin/feature-flags/payment
             - id: legal-service
               uri: lb://legal-service
               predicates:

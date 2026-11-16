@@ -40,7 +40,7 @@ public class CustomerSecurityConfig {
     public JwtDecoder customerJwtDecoder() {
         try {
             var publicKey = PemKeyLoader.loadPublicKey(publicKeyPath);
-            return NimbusJwtDecoder.withPublicKey(publicKey).build();
+            return AudienceDecoders.withAudience(NimbusJwtDecoder.withPublicKey(publicKey).build(), "nepalgo-customer");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load customer JWT public key", e);
         }

@@ -66,7 +66,7 @@ public class StaffSecurityConfig {
     public JwtDecoder staffJwtDecoder() {
         try {
             var publicKey = PemKeyLoader.loadPublicKey(publicKeyPath);
-            return NimbusJwtDecoder.withPublicKey(publicKey).build();
+            return AudienceDecoders.withAudience(NimbusJwtDecoder.withPublicKey(publicKey).build(), "nepalgo-admin");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load staff JWT public key", e);
         }

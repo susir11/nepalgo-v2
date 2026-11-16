@@ -26,6 +26,9 @@ public class AdminAuditLog {
     @Column(name = "target_staff_id")
     private Long targetStaffId;
 
+    @Column(name = "target_customer_id")
+    private Long targetCustomerId;
+
     private String details;
 
     @Column(name = "created_at", nullable = false, updatable = false)

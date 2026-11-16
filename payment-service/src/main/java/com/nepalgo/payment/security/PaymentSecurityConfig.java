@@ -62,7 +62,8 @@ public class PaymentSecurityConfig {
                         .requestMatchers("/api/admin/bills/**", "/api/admin/receipts/**",
                                 "/api/admin/refund-requests/**").hasAnyAuthority("SUPER_ADMIN", "OPS")
                         // Ledger is readable by OPS; issuing/editing/voiding credit is SUPER_ADMIN (below).
-                        .requestMatchers(HttpMethod.GET, "/api/admin/store-credits/**").hasAnyAuthority("SUPER_ADMIN", "OPS")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/store-credits/**", "/api/admin/feature-flags/**")
+                        .hasAnyAuthority("SUPER_ADMIN", "OPS")
                         // Everything else (propose/approve FX, VAT/settings, issue/edit/void credit): SUPER_ADMIN only.
                         .anyRequest().hasAuthority("SUPER_ADMIN")
                 )

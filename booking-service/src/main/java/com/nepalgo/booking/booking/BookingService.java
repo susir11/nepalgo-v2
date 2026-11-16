@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nepalgo.booking.client.CatalogClient;
 import com.nepalgo.booking.client.PaymentClient;
 import com.nepalgo.booking.client.LegalClient;
+import com.nepalgo.booking.client.AuthClient;
 import com.nepalgo.booking.dto.BookingResponse;
 import com.nepalgo.booking.dto.CreateBookingRequest;
 import lombok.RequiredArgsConstructor;
@@ -36,9 +37,11 @@ public class BookingService {
     private final CancellationTierCalculator cancellationTierCalculator;
     private final PaymentClient paymentClient;
     private final LegalClient legalClient;
+    private final AuthClient authClient;
 
     @Transactional
     public BookingResponse create(Long customerId, CreateBookingRequest request) {
+        requireActiveCustomer(customerId);
         var destination = catalogClient.getDestination(request.destinationId());
         if (destination.defaultItinerary() == null) {
             throw new IllegalStateException("Destination has no DEFAULT itinerary authored yet");
@@ -194,6 +197,7 @@ public class BookingService {
 
     @Transactional
     public AdminBookingSummaryResponse createManual(Long adminId, CreateManualBookingRequest request) {
+        requireActiveCustomer(request.customerId());
         var destination = catalogClient.getDestination(request.destinationId());
         if (destination.defaultItinerary() == null) {
             throw new IllegalStateException("Destination has no DEFAULT itinerary authored yet");
@@ -238,10 +242,53 @@ public class BookingService {
         return toAdminSummary(booking);
     }
 
-    public AdminBookingPageResponse adminList(String status, Long customerId, int page, int size) {
-        Page<Booking> result = bookingRepository.adminSearch(status, customerId, PageRequest.of(page, size));
+    public AdminBookingPageResponse adminList(AdminSearch f, int page, int size) {
+        Page<Booking> result = bookingRepository.adminSearch(blank(f.status()), f.customerId(), f.destinationId(),
+                blank(f.origin()), f.arrivalFrom(), f.arrivalTo(), blank(f.q()), blank(f.sort()),
+                PageRequest.of(page, Math.min(size, 100)));
         var content = result.getContent().stream().map(this::toAdminSummary).toList();
         return new AdminBookingPageResponse(content, page, size, result.getTotalElements(), result.getTotalPages());
+    }
+
+    public record AdminSearch(String status, Long customerId, Long destinationId, String origin,
+                              LocalDate arrivalFrom, LocalDate arrivalTo, String q, String sort) {}
+
+    private static String blank(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
+    }
+
+    // Dashboard "what needs attention now" counters (spec 15.1).
+    public java.util.Map<String, Long> stats() {
+        java.util.Map<String, Long> m = new java.util.TreeMap<>();
+        for (BookingStatus s : BookingStatus.values()) m.put(s.name(), 0L);
+        for (Object[] row : bookingRepository.countByStatus()) {
+            m.put((String) row[0], ((Number) row[1]).longValue());
+        }
+        m.put("MANUAL_AWAITING_BILL", bookingRepository.countByStatusAndInvoiceNumberIsNull(BookingStatus.AWAITING_PAYMENT));
+        return m;
+    }
+
+    // Booking-service's slice of the activity timeline (spec 15.1). The admin
+    // frontend merges it with payment-service's bill timeline at render time.
+    public java.util.List<TimelineEntry> timeline(Long bookingId) {
+        getBookingOrThrow(bookingId);
+        return auditLogRepository.findByBookingIdOrderByCreatedAt(bookingId).stream()
+                .map(a -> new TimelineEntry(a.getId(), a.getActionType(), a.getAdminUserId(), a.getCustomerId(),
+                        a.getDetails(), a.getCreatedAt()))
+                .toList();
+    }
+
+    public record TimelineEntry(Long id, String actionType, Long adminUserId, Long customerId, String details,
+                                Instant createdAt) {}
+
+    @Transactional
+    public AdminBookingDetailResponse updateInternalNotes(Long adminId, Long bookingId, String notes) {
+        Booking b = getBookingOrThrow(bookingId);
+        b.setInternalNotes(notes == null || notes.isBlank() ? null : notes.strip());
+        bookingRepository.save(b);
+        logAudit(adminId, "INTERNAL_NOTES_UPDATED", bookingId, b.getCustomerId(),
+                b.getInternalNotes() == null ? "(cleared)" : b.getInternalNotes());
+        return adminDetail(bookingId);
     }
 
     private void requireStatus(Booking booking, BookingStatus expected) {
@@ -257,7 +304,8 @@ public class BookingService {
 
     private AdminBookingSummaryResponse toAdminSummary(Booking b) {
         return new AdminBookingSummaryResponse(b.getId(), b.getVoucherCode(), b.getStatus().name(),
-                b.getCustomerId(), b.getDestinationNameSnapshot(), b.getArrivalDate(), b.getOrigin().name());
+                b.getCustomerId(), b.getDestinationNameSnapshot(), b.getArrivalDate(), b.getOrigin().name(),
+                b.getPartySize(), b.getInvoiceNumber(), b.getLeadBookerLegalName(), b.getCreatedAt());
     }
 
     @Transactional
@@ -267,6 +315,7 @@ public class BookingService {
         requireOwnership(booking, customerId);
         requireStatus(booking, BookingStatus.AWAITING_PAYMENT);
 
+        requireActiveCustomer(customerId);
         if (booking.getInvoiceNumber() == null) {
             // Server-side guard: you can't pay a bill that hasn't been issued yet.
             throw new InvalidBookingStateException("The bill for this booking has not been issued yet");
@@ -323,6 +372,16 @@ public class BookingService {
         bookingRepository.save(booking);
         logAudit(adminId, "PAYMENT_REJECTED", bookingId, booking.getCustomerId(), reason);
         return toAdminSummary(booking);
+    }
+
+    // Spec 15.2: a suspended customer can view trips and reach support, but can't
+    // start NEW activity (trip requests, payment submissions). auth-service owns
+    // the account status; we ask it every time (fail-closed if it can't answer).
+    private void requireActiveCustomer(Long customerId) {
+        AuthClient.CustomerStatus c = authClient.customer(customerId);
+        if ("SUSPENDED".equals(c.status())) {
+            throw new CustomerSuspendedException();
+        }
     }
 
     private void requireOwnership(Booking booking, Long customerId) {

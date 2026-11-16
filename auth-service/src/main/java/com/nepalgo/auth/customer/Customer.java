@@ -31,6 +31,17 @@ public class Customer {
     @Column(name = "display_name")
     private String displayName;
 
+    // ACTIVE | SUSPENDED (spec 15.2). Suspended = no NEW bookings or payments;
+    // existing trips, history and support stay available.
+    @Column(nullable = false, length = 12)
+    private String status = "ACTIVE";
+
+    @Column(name = "suspended_at")
+    private Instant suspendedAt;
+
+    @Column(name = "suspension_reason", columnDefinition = "TEXT")
+    private String suspensionReason;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

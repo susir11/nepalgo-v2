@@ -77,6 +77,24 @@ public class BookingExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(CustomerSuspendedException.class)
+    public ProblemDetail handleSuspended(CustomerSuspendedException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problem.setTitle("Account Suspended");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "CUSTOMER_SUSPENDED");
+        return problem;
+    }
+
+    @ExceptionHandler(com.nepalgo.booking.client.AuthClient.AuthUnavailableException.class)
+    public ProblemDetail handleAuthUnavailable(com.nepalgo.booking.client.AuthClient.AuthUnavailableException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+        problem.setTitle("Auth Service Unavailable");
+        problem.setDetail("Nothing was changed. Try again shortly.");
+        problem.setProperty("code", "AUTH_SERVICE_UNAVAILABLE");
+        return problem;
+    }
+
     @ExceptionHandler(InvalidBookingStateException.class)
     public ProblemDetail handleInvalidState(InvalidBookingStateException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);

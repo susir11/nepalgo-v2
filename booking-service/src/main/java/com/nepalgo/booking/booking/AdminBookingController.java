@@ -20,9 +20,34 @@ public class AdminBookingController {
     public ResponseEntity<AdminBookingPageResponse> list(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long destinationId,
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) java.time.LocalDate arrivalFrom,
+            @RequestParam(required = false) java.time.LocalDate arrivalTo,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "urgency") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(bookingService.adminList(status, customerId, page, size));
+        return ResponseEntity.ok(bookingService.adminList(new BookingService.AdminSearch(status, customerId,
+                destinationId, origin, arrivalFrom, arrivalTo, q, sort), page, size));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<java.util.Map<String, Long>> stats() {
+        return ResponseEntity.ok(bookingService.stats());
+    }
+
+    @GetMapping("/{id}/timeline")
+    public ResponseEntity<java.util.List<BookingService.TimelineEntry>> timeline(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.timeline(id));
+    }
+
+    public record InternalNotesRequest(@jakarta.validation.constraints.Size(max = 5000) String internalNotes) {}
+
+    @PutMapping("/{id}/internal-notes")
+    public ResponseEntity<AdminBookingDetailResponse> notes(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                                            @Valid @RequestBody InternalNotesRequest req) {
+        return ResponseEntity.ok(bookingService.updateInternalNotes(Long.parseLong(jwt.getSubject()), id, req.internalNotes()));
     }
 
     @PostMapping("/{id}/approve")

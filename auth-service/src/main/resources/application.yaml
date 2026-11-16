@@ -41,6 +41,9 @@ nepalgo:
     credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS}
   security:
     totp-encryption-key: ${TOTP_ENCRYPTION_KEY}
+  internal:
+    # LOCAL-DEV fallback only; Phase 9 must set INTERNAL_API_KEY and remove it.
+    api-key: ${INTERNAL_API_KEY:nepalgo-local-dev-internal-key}
   bootstrap:
       admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
       admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
