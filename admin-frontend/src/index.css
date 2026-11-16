@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Design tokens from spec 16.1 — the SAME names/values the Flutter app uses,
+   so the admin portal shares the customer app's visual language. Tailwind v4
+   turns each --color-* into utilities: bg-primary, text-ink, border-divider... */
+@theme {
+  --color-primary: #387B53;          /* brand/primary — sage green */
+  --color-primary-pressed: #2C6242;
+  --color-primary-tint: #E4EFE8;
+  --color-secondary: #E2B338;        /* brand/secondary — mustard, badges/icons only */
+  --color-background: #E5E7E5;       /* neutral/background — screen tint */
+  --color-card: #FFFFFF;             /* neutral/card */
+  --color-nav: #111111;              /* neutral/nav-surface */
+  --color-ink: #181818;              /* headings + body */
+  --color-muted: #737373;            /* text-secondary */
+  --color-divider: #EDEDEB;
+  --color-success: #2E9E5B;
+  --color-warning: #D97706;
+  --color-error: #D32F2F;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 24px;               /* primary cards */
+  --radius-inner: 14px;              /* internal containers */
+}
+
+/* Elevation rule (16.1): zero shadows; depth = white card on tinted background. */
+html, body, #root { height: 100%; }
+body {
+  background: var(--color-background);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+
+/* Keyboard users must always see where focus is (accessibility). */
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Long legal text / JSON editors */
+.mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }
