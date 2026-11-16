@@ -7,5 +7,7 @@ public record BookingResponse(
         Long id, String voucherCode, String status, String destinationNameSnapshot,
         int partySize, LocalDate arrivalDate, int durationDays,
         boolean guideRequested, boolean porterRequested, String specialRequestText,
-        Instant createdAt
+        Instant createdAt,
+        String invoiceNumber,      // non-null once the bill is issued (customer can fetch it from payment-service)
+        String rejectionReason     // shown to the customer after a rejection / payment kick-back (spec 8, Step 4)
 ) {}

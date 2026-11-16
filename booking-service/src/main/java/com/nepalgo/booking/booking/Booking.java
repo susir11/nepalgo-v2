@@ -80,18 +80,14 @@ public class Booking {
     @Column(name = "lead_booker_email")
     private String leadBookerEmail;
 
-    @Column(name = "payoneer_link", length = 500)
-    private String payoneerLink;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "itemized_bill_json", columnDefinition = "jsonb")
-    private String itemizedBillJson;
-
+    // Read-only copy of the bill's invoice number (payment-service is the source
+    // of truth). Non-null = the bill has been issued, so the customer can pay.
     @Column(name = "invoice_number", length = 50)
     private String invoiceNumber;
 
-    @Column(name = "payment_receipt_image_url", length = 500)
-    private String paymentReceiptImageUrl;
+    // Id of the receipt row in payment-service (which owns the private image).
+    @Column(name = "payment_receipt_id")
+    private Long paymentReceiptId;
 
     @Column(name = "payment_receipt_code", length = 100)
     private String paymentReceiptCode;

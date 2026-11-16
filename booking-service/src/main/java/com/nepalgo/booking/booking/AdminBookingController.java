@@ -37,6 +37,13 @@ public class AdminBookingController {
         return ResponseEntity.ok(bookingService.reject(adminId, id, request.rejectionReason()));
     }
 
+    // Manual (ops-created) bookings: issue the priced bill so the customer can pay.
+    @PostMapping("/{id}/issue-bill")
+    public ResponseEntity<AdminBookingSummaryResponse> issueBill(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
+        Long adminId = Long.parseLong(jwt.getSubject());
+        return ResponseEntity.ok(bookingService.issueBillForManualBooking(adminId, id));
+    }
+
     @PostMapping("/manual")
     public ResponseEntity<AdminBookingSummaryResponse> createManual(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateManualBookingRequest request) {
         Long adminId = Long.parseLong(jwt.getSubject());

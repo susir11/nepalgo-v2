@@ -2,6 +2,7 @@ package com.nepalgo.booking.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nepalgo.booking.client.CatalogClient;
+import com.nepalgo.booking.client.PaymentClient;
 import com.nepalgo.booking.dto.BookingResponse;
 import com.nepalgo.booking.dto.CreateBookingRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class BookingService {
     private final VoucherCodeGenerator voucherCodeGenerator;
     private final ObjectMapper objectMapper;
     private final CancellationTierCalculator cancellationTierCalculator;
+    private final PaymentClient paymentClient;
 
     @Transactional
     public BookingResponse create(Long customerId, CreateBookingRequest request) {
@@ -104,7 +106,7 @@ public class BookingService {
                 b.getCustomerId(), b.getDestinationId(), b.getDestinationNameSnapshot(), b.getItinerarySnapshot(),
                 b.getPartySize(), b.getArrivalDate(), b.getDurationDays(), b.isGuideRequested(), b.isPorterRequested(),
                 b.getSpecialRequestText(), b.getLeadBookerLegalName(), b.getLeadBookerPassportNumber(), b.getLeadBookerEmail(),
-                b.isConsentConfirmed(), b.getPaymentReceiptImageUrl(), b.getPaymentReceiptCode(), b.getRejectionReason(),
+                b.isConsentConfirmed(), b.getPaymentReceiptId(), b.getPaymentReceiptCode(), b.getRejectionReason(),
                 b.getInternalNotes(), b.getCancellationTier(), b.getCancellationRefundPercent(), b.getCreatedAt());
     }
 
@@ -135,17 +137,44 @@ public class BookingService {
     private BookingResponse toResponse(Booking b) {
         return new BookingResponse(b.getId(), b.getVoucherCode(), b.getStatus().name(),
                 b.getDestinationNameSnapshot(), b.getPartySize(), b.getArrivalDate(), b.getDurationDays(),
-                b.isGuideRequested(), b.isPorterRequested(), b.getSpecialRequestText(), b.getCreatedAt());
+                b.isGuideRequested(), b.isPorterRequested(), b.getSpecialRequestText(), b.getCreatedAt(),
+                b.getInvoiceNumber(), b.getRejectionReason());
     }
 
+    // "Approve & Issue Bill" (spec 8, Step 2). Order matters:
+    //   1. payment-service issues the bill (assigns the invoice number) — FIRST
+    //   2. only then does the booking move to AWAITING_PAYMENT
+    // If step 1 fails (bill not priced, no Payoneer link, service down) the
+    // booking does not move: fail-closed. If step 2 fails after step 1 worked,
+    // the admin clicks again and the idempotent issue returns the SAME number.
     @Transactional
     public AdminBookingSummaryResponse approve(Long adminId, Long bookingId) {
         Booking booking = getBookingOrThrow(bookingId);
         requireStatus(booking, BookingStatus.PENDING_APPROVAL);
+        PaymentClient.BillStatus bill = paymentClient.issueBill(bookingId, adminId);
+        booking.setInvoiceNumber(bill.invoiceNumber());
         booking.setStatus(BookingStatus.AWAITING_PAYMENT);
         booking.setAwaitingPaymentSince(Instant.now());
         bookingRepository.save(booking);
-        logAudit(adminId, "BOOKING_APPROVED", bookingId, booking.getCustomerId(), null);
+        logAudit(adminId, "BOOKING_APPROVED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber());
+        return toAdminSummary(booking);
+    }
+
+    // Manual bookings (8b) start in AWAITING_PAYMENT without a bill. Admin prices
+    // the bill in payment-service, then issues it here. The payment window starts
+    // NOW — the customer couldn't pay before there was a bill to pay.
+    @Transactional
+    public AdminBookingSummaryResponse issueBillForManualBooking(Long adminId, Long bookingId) {
+        Booking booking = getBookingOrThrow(bookingId);
+        requireStatus(booking, BookingStatus.AWAITING_PAYMENT);
+        if (booking.getInvoiceNumber() != null) {
+            throw new InvalidBookingStateException("Bill already issued: " + booking.getInvoiceNumber());
+        }
+        PaymentClient.BillStatus bill = paymentClient.issueBill(bookingId, adminId);
+        booking.setInvoiceNumber(bill.invoiceNumber());
+        booking.setAwaitingPaymentSince(Instant.now());
+        bookingRepository.save(booking);
+        logAudit(adminId, "BILL_ISSUED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber());
         return toAdminSummary(booking);
     }
 
@@ -156,6 +185,7 @@ public class BookingService {
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectionReason(reason);
         bookingRepository.save(booking);
+        paymentClient.releaseCreditsQuietly(bookingId);   // reserved travel credits go back to the wallet
         logAudit(adminId, "BOOKING_REJECTED", bookingId, booking.getCustomerId(), reason);
         return toAdminSummary(booking);
     }
@@ -241,11 +271,16 @@ public class BookingService {
     }
 
     @Transactional
-    public BookingResponse submitPaymentReceipt(Long customerId, Long bookingId, SubmitPaymentReceiptRequest request) {
+    public BookingResponse submitPaymentReceipt(Long customerId, Long bookingId, String receiptCode,
+                                                org.springframework.web.multipart.MultipartFile file) {
         Booking booking = getBookingOrThrow(bookingId);
         requireOwnership(booking, customerId);
         requireStatus(booking, BookingStatus.AWAITING_PAYMENT);
 
+        if (booking.getInvoiceNumber() == null) {
+            // Server-side guard: you can't pay a bill that hasn't been issued yet.
+            throw new InvalidBookingStateException("The bill for this booking has not been issued yet");
+        }
         if (!booking.isConsentConfirmed()) {
             // Mirrors the spec's real intent (Step 3 must check a confirmed
             // consent record before accepting payment) even though the
@@ -253,30 +288,44 @@ public class BookingService {
             throw new InvalidBookingStateException("Consent must be confirmed before submitting payment");
         }
 
-        booking.setPaymentReceiptImageUrl(request.paymentReceiptImageUrl());
-        booking.setPaymentReceiptCode(request.paymentReceiptCode());
+        // All booking-side checks passed: hand the image to payment-service, which
+        // validates it is a real image, stores it privately and returns its id.
+        PaymentClient.StoredReceipt stored = paymentClient.storeReceipt(bookingId, customerId, receiptCode, file);
+        booking.setPaymentReceiptId(stored.receiptId());
+        booking.setPaymentReceiptCode(stored.receiptCode());
+        booking.setRejectionReason(null);   // a fresh attempt clears the previous kick-back reason
         booking.setStatus(BookingStatus.VERIFYING_PAYMENT);
         bookingRepository.save(booking);
         logAudit(null, "PAYMENT_RECEIPT_SUBMITTED", bookingId, customerId, null);
         return toResponse(booking);
     }
 
+    // "Payment Verified - Issue Tickets": lock the bill FIRST (it becomes a final
+    // tax document, buyer name stamped from the identity form), then confirm.
     @Transactional
     public AdminBookingSummaryResponse verifyPayment(Long adminId, Long bookingId) {
         Booking booking = getBookingOrThrow(bookingId);
         requireStatus(booking, BookingStatus.VERIFYING_PAYMENT);
+        PaymentClient.BillStatus bill = paymentClient.lockBill(bookingId, adminId, booking.getLeadBookerLegalName());
         booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setRejectionReason(null);
         bookingRepository.save(booking);
-        logAudit(adminId, "PAYMENT_VERIFIED", bookingId, booking.getCustomerId(), null);
+        logAudit(adminId, "PAYMENT_VERIFIED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber() + " locked");
         return toAdminSummary(booking);
     }
 
+    // Decision D1: kick back to AWAITING_PAYMENT (not a dead end) with a reason the
+    // customer sees, clear the bad receipt, and give them a FRESH payment window
+    // — otherwise a slow admin review could leave them only minutes to retry.
     @Transactional
     public AdminBookingSummaryResponse rejectPayment(Long adminId, Long bookingId, String reason) {
         Booking booking = getBookingOrThrow(bookingId);
         requireStatus(booking, BookingStatus.VERIFYING_PAYMENT);
-        booking.setStatus(BookingStatus.PAYMENT_REJECTED);
+        booking.setStatus(BookingStatus.AWAITING_PAYMENT);
+        booking.setAwaitingPaymentSince(Instant.now());
         booking.setRejectionReason(reason);
+        booking.setPaymentReceiptId(null);
+        booking.setPaymentReceiptCode(null);
         bookingRepository.save(booking);
         logAudit(adminId, "PAYMENT_REJECTED", bookingId, booking.getCustomerId(), reason);
         return toAdminSummary(booking);
@@ -301,6 +350,7 @@ public class BookingService {
         }
         booking.setStatus(BookingStatus.WITHDRAWN);
         bookingRepository.save(booking);
+        paymentClient.releaseCreditsQuietly(bookingId);
         logAudit(null, "BOOKING_WITHDRAWN", bookingId, customerId, null);
         return toResponse(booking);
     }
@@ -312,13 +362,18 @@ public class BookingService {
         requireStatus(booking, BookingStatus.CONFIRMED);
 
         TierResult tier = cancellationTierCalculator.calculate(booking.getArrivalDate());
+        // Money first (payment-service creates the RefundRequest / Travel Credit),
+        // status second. Payment's side is idempotent, so a retry is always safe.
+        PaymentClient.CancellationOutcome money = paymentClient.cancel(bookingId, tier.tier(), tier.refundPercent(), false);
         booking.setStatus(BookingStatus.CANCELLED_TIERED);
         booking.setCancellationTier(tier.tier());
         booking.setCancellationRefundPercent(tier.refundPercent());
         bookingRepository.save(booking);
 
-        logAudit(null, "BOOKING_CANCELLED_TIERED", bookingId, customerId, tier.tier());
-        return new CancelBookingResponse(booking.getId(), booking.getStatus().name(), tier.tier(), tier.refundPercent());
+        logAudit(null, "BOOKING_CANCELLED_TIERED", bookingId, customerId, tier.tier()
+                + " cash $" + money.cashRefundUsd() + ", credit $" + money.creditUsd());
+        return new CancelBookingResponse(booking.getId(), booking.getStatus().name(), tier.tier(), tier.refundPercent(),
+                money.cashRefundUsd(), money.creditCode(), money.creditUsd());
     }
 
     @Transactional
@@ -330,6 +385,8 @@ public class BookingService {
         Booking booking = getBookingOrThrow(bookingId);
         requireStatus(booking, BookingStatus.CONFIRMED);
 
+        PaymentClient.CancellationOutcome money =
+                paymentClient.cancel(bookingId, "FORCE_MAJEURE", new BigDecimal("100.00"), true);
         booking.setStatus(BookingStatus.CANCELLED_FORCE_MAJEURE);
         booking.setCancellationTier("FORCE_MAJEURE");
         booking.setCancellationRefundPercent(new BigDecimal("100.00"));
@@ -337,7 +394,8 @@ public class BookingService {
         bookingRepository.save(booking);
 
         logAudit(adminId, "BOOKING_CANCELLED_FORCE_MAJEURE", bookingId, booking.getCustomerId(), reason);
-        return new CancelBookingResponse(booking.getId(), booking.getStatus().name(), "FORCE_MAJEURE", new BigDecimal("100.00"));
+        return new CancelBookingResponse(booking.getId(), booking.getStatus().name(), "FORCE_MAJEURE",
+                new BigDecimal("100.00"), money.cashRefundUsd(), money.creditCode(), money.creditUsd());
     }
 
     // Spec section 8 / settings: payment_window_hours is a named, configurable
@@ -349,11 +407,14 @@ public class BookingService {
     @Transactional
     public int expireOverdueBookings() {
         Instant cutoff = Instant.now().minus(Duration.ofHours(paymentWindowHours));
+        // Only bookings whose bill was issued: a manual booking still being priced
+        // has nothing to pay yet, so its window hasn't started.
         List<Booking> overdue = bookingRepository
-                .findByStatusAndAwaitingPaymentSinceBefore(BookingStatus.AWAITING_PAYMENT, cutoff);
+                .findByStatusAndAwaitingPaymentSinceBeforeAndInvoiceNumberIsNotNull(BookingStatus.AWAITING_PAYMENT, cutoff);
         for (Booking b : overdue) {
             b.setStatus(BookingStatus.EXPIRED);
             bookingRepository.save(b);
+            paymentClient.releaseCreditsQuietly(b.getId());
             // EXPIRED isn't one of the three "active hold" statuses, so the
             // date-range hold is released automatically with no extra code.
             logAudit(null, "BOOKING_EXPIRED", b.getId(), b.getCustomerId(), "payment window elapsed");

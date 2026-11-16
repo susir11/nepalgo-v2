@@ -10,7 +10,9 @@ public record AdminBookingDetailResponse(
         int partySize, LocalDate arrivalDate, int durationDays,
         boolean guideRequested, boolean porterRequested, String specialRequestText,
         String leadBookerLegalName, String leadBookerPassportNumber, String leadBookerEmail,
-        boolean consentConfirmed, String paymentReceiptImageUrl, String paymentReceiptCode,
+        boolean consentConfirmed,
+        Long paymentReceiptId,          // image itself: GET payment-service /api/admin/receipts?bookingId= (presigned link)
+        String paymentReceiptCode,
         String rejectionReason, String internalNotes,
         String cancellationTier, BigDecimal cancellationRefundPercent, Instant createdAt
 ) {}

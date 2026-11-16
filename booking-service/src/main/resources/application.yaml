@@ -15,6 +15,10 @@ spring:
   flyway:
     schemas: booking
     default-schema: booking
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 eureka:
   client:
@@ -38,3 +42,8 @@ nepalgo:
 
   booking:
     payment-window-hours: 48
+
+  internal:
+    # Shared secret for /internal/** service-to-service calls. LOCAL-DEV fallback
+    # only; Phase 9 must set INTERNAL_API_KEY and remove the fallback.
+    api-key: ${INTERNAL_API_KEY:nepalgo-local-dev-internal-key}

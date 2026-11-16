@@ -34,10 +34,14 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.confirmConsent(customerId, id));
     }
 
-    @PostMapping("/{id}/payment-receipt")
-    public ResponseEntity<BookingResponse> submitPaymentReceipt(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id, @Valid @RequestBody SubmitPaymentReceiptRequest request) {
+    // Spec 8, Step 3: an actual image FILE (multipart "file") plus the typed
+    // transaction code ("paymentReceiptCode") — never a pasted link.
+    @PostMapping(value = "/{id}/payment-receipt", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookingResponse> submitPaymentReceipt(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id,
+                                                                @RequestParam("paymentReceiptCode") String paymentReceiptCode,
+                                                                @RequestPart("file") org.springframework.web.multipart.MultipartFile file) {
         Long customerId = Long.parseLong(jwt.getSubject());
-        return ResponseEntity.ok(bookingService.submitPaymentReceipt(customerId, id, request));
+        return ResponseEntity.ok(bookingService.submitPaymentReceipt(customerId, id, paymentReceiptCode, file));
     }
 
     @PostMapping("/{id}/withdraw")

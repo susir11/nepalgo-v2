@@ -3,3 +3,6 @@ secrets/
 target/
 .idea/
 *.iml
+
+# Claude Code machine-local permissions
+.claude/settings.local.json

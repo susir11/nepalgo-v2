@@ -50,7 +50,17 @@ public class CatalogSecurityConfig {
     public JwtDecoder staffJwtDecoder() {
         try {
             var publicKey = PemKeyLoader.loadPublicKey(publicKeyPath);
-            return NimbusJwtDecoder.withPublicKey(publicKey).build();
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(publicKey).build();
+            // Defence in depth (same as booking/payment): the MFA-pending token is
+            // signed with the same staff key; only "aud" tells it apart from a
+            // real post-MFA staff token.
+            org.springframework.security.oauth2.core.OAuth2TokenValidator<Jwt> aud =
+                    new org.springframework.security.oauth2.jwt.JwtClaimValidator<List<String>>(
+                            org.springframework.security.oauth2.jwt.JwtClaimNames.AUD,
+                            a -> a != null && a.contains("nepalgo-admin"));
+            decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
+                    org.springframework.security.oauth2.jwt.JwtValidators.createDefault(), aud));
+            return decoder;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load staff JWT public key", e);
         }

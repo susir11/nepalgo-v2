@@ -16,7 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Optional<Booking> findByVoucherCode(String voucherCode);
     boolean existsByVoucherCode(String voucherCode);
-    List<Booking> findByStatusAndAwaitingPaymentSinceBefore(BookingStatus status, Instant cutoff);
+    List<Booking> findByStatusAndAwaitingPaymentSinceBeforeAndInvoiceNumberIsNotNull(BookingStatus status, Instant cutoff);
     Page<Booking> findByCustomerIdOrderByCreatedAtDesc(Long customerId, Pageable pageable);
 
     // Native query: Postgres date arithmetic uses "date + integer * interval",

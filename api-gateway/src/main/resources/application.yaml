@@ -20,7 +20,23 @@ spring:
             - id: auth-service
               uri: lb://auth-service
               predicates:
-                - Path=/api/v1/auth/**,/api/v1/admin/auth/**
+                - Path=/api/v1/auth/**,/api/v1/admin/auth/**,/api/v1/admin/staff/**
+            - id: catalog-service
+              uri: lb://catalog-service
+              predicates:
+                - Path=/api/destinations/**,/api/admin/destinations/**
+            - id: booking-service
+              uri: lb://booking-service
+              predicates:
+                - Path=/api/bookings/**,/api/admin/bookings/**
+            - id: payment-service
+              uri: lb://payment-service
+              predicates:
+                - Path=/api/bills/**,/api/store-credits/**,/api/admin/bills/**,/api/admin/receipts/**,/api/admin/fx-rates/**,/api/admin/billing-settings/**,/api/admin/store-credits/**,/api/admin/refund-requests/**
+            # NOTE: /internal/** is deliberately NOT routed. Service-to-service
+            # endpoints are reachable only inside the network (Eureka), never
+            # from the internet through the gateway: defence in depth on top of
+            # the X-Internal-Api-Key check.
 
 eureka:
   client:

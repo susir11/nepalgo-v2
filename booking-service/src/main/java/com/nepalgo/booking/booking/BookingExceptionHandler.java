@@ -1,6 +1,7 @@
 package com.nepalgo.booking.booking;
 
 import com.nepalgo.booking.client.CatalogUnavailableException;
+import com.nepalgo.booking.client.PaymentClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +32,28 @@ public class BookingExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
         problem.setTitle("Catalog Service Unavailable");
         problem.setProperty("code", "CATALOG_UNAVAILABLE");
+        return problem;
+    }
+
+    // payment-service said NO (e.g. bill not priced / no Payoneer link):
+    // keep its status and code so the admin sees the real reason.
+    @ExceptionHandler(PaymentClient.PaymentRejectedException.class)
+    public ProblemDetail handlePaymentRejected(PaymentClient.PaymentRejectedException e) {
+        HttpStatus status = HttpStatus.resolve(e.getStatus());
+        ProblemDetail problem = ProblemDetail.forStatus(status == null ? HttpStatus.CONFLICT : status);
+        problem.setTitle("Payment Service Rejected The Request");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", e.getCode());
+        return problem;
+    }
+
+    // payment-service unreachable: fail closed, booking unchanged, safe to retry.
+    @ExceptionHandler(PaymentClient.PaymentUnavailableException.class)
+    public ProblemDetail handlePaymentUnavailable(PaymentClient.PaymentUnavailableException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+        problem.setTitle("Payment Service Unavailable");
+        problem.setDetail("Nothing was changed. Try again shortly.");
+        problem.setProperty("code", "PAYMENT_SERVICE_UNAVAILABLE");
         return problem;
     }
 

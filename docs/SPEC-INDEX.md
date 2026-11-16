@@ -1,0 +1,31 @@
+# Spec index — nepalgo-master-prompt-v15.md
+Read ONLY the range you need (use Read with offset/limit). Never load the whole file (1663 lines).
+
+| Lines | Section |
+|---|---|
+| 20-71 | 0. GROUND RULES |
+| 73-127 | 1. PRODUCT SCOPE |
+| 129-206 | 2. TECH STACK (mandatory) |
+| 208-248 | 3. INFORMATION ARCHITECTURE — screens |
+| 250-262 | 4. DESIGN DIRECTION |
+| 264-310 | 5. AUTHENTICATION |
+| 312-424 | 6. CATALOG & ITINERARY |
+| 426-438 | 7. SEARCH & FILTER |
+| 440-603 | 8. BOOKING — THE CORE 4-STEP WORKFLOW |
+| 605-618 | 9. THE GATED "POLICY REVIEW" CHECKOUT SCREEN |
+| 620-870 | 10. LEGAL CONTENT — VERSIONING, TERMS, AND PRIVACY POLICY |
+| 872-879 | 11. MAPS & WEATHER |
+| 881-901 | 12. SUPPORT |
+| 903-952 | 13. NON-FUNCTIONAL REQUIREMENTS |
+| 954-985 | 14. BUILD PLAN — phases |
+| 987-1151 | 15. ADMIN DASHBOARD — SCREENS & AT-SCALE UX |
+| 1153-1434 | 16. UI/UX DESIGN SYSTEM, USE CASES & FLOW DIAGRAMS |
+| 1436-1441 | 17. IMAGE PIPELINE |
+| 1443-1458 | 18. DEPLOYMENT & PRODUCTION READINESS |
+| 1460-1471 | 19. NOTIFICATION MATRIX |
+| 1473-1493 | 20. FEATURE FLAG & GOVERNANCE REGISTRY |
+| 1495-1644 | 21. BILLING & INVOICE COMPLIANCE |
+| 1646-1664 | 22. BEFORE YOU START — ASK ME |
+
+Phase list is inside section 14 (lines ~954-986). Phase 4 = payment-service + billing (section 21).
+Important sub-sections: 8.7 cancellation (l.534), 8.8 double-booking (l.543), 8.9 withdraw (l.547).
