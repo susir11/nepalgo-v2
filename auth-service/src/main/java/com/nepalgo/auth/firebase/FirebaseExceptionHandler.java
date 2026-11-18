@@ -27,6 +27,15 @@ public class FirebaseExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(com.nepalgo.auth.staff.MfaAlreadyEnabledException.class)
+    public ProblemDetail handleMfaAlreadyEnabled(com.nepalgo.auth.staff.MfaAlreadyEnabledException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("MFA Already Enabled");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "AUTH_MFA_ALREADY_ENABLED");
+        return problem;
+    }
+
     @ExceptionHandler(InvalidMfaCodeException.class)
     public ProblemDetail handleInvalidMfaCode(InvalidMfaCodeException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);

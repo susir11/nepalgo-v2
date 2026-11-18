@@ -6,3 +6,6 @@ target/
 
 # Claude Code machine-local permissions
 .claude/settings.local.json
+
+# Database dumps (contain personal data)
+backups/

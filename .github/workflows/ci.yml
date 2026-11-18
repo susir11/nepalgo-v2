@@ -1,0 +1,94 @@
+# NepalGo CI/CD: build + test everything on every push / PR; on master also
+# build and publish one Docker image per service to GitHub Container Registry.
+name: ci
+
+on:
+  push:
+    branches: [ master, "phase-*" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Fails the build if anything that looks like a key/password is committed.
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [ eureka-server, api-gateway, auth-service, catalog-service, booking-service,
+                   payment-service, legal-service, notification-service, support-service ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      # Unit tests run here; the generated *ApplicationTests (full context +
+      # Testcontainers + real key files) are excluded until a CI key-pair exists.
+      - name: Build and unit-test
+        working-directory: ${{ matrix.service }}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp package -Dtest='!*ApplicationTests' -Dsurefire.failIfNoSpecifiedTests=false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/${{ matrix.service }}-0.0.1-SNAPSHOT.jar
+          retention-days: 7
+
+  admin-frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: admin-frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: admin-frontend/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
+
+  mobile-app:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile-app } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build web --dart-define=API_BASE=https://api.example.invalid
+
+  # master only: one image per service, tagged with the commit SHA (immutable,
+  # so a deploy can always be rolled back to an exact build) and "latest".
+  images:
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    needs: [ secret-scan, backend, admin-frontend ]
+    runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
+    strategy:
+      matrix:
+        service: [ eureka-server, api-gateway, auth-service, catalog-service, booking-service,
+                   payment-service, legal-service, notification-service, support-service, admin-frontend ]
+    steps:
+      - uses: actions/checkout@v4
+      - if: matrix.service != 'admin-frontend'
+        uses: actions/download-artifact@v4
+        with: { name: "jar-${{ matrix.service }}", path: "${{ matrix.service }}/target" }
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/nepalgo-${{ matrix.service }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/nepalgo-${{ matrix.service }}:latest

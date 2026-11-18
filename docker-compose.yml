@@ -2,6 +2,13 @@
 # so this stack can never collide with Mero Remit's.
 name: nepalgo
 
+# Shared by every application service below (YAML anchor).
+x-common-env: &common-env
+  EUREKA_URL: http://eureka-server:8761/eureka
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}        # empty -> the container refuses to start (entrypoint check)
+  JWT_STAFF_PUBLIC_KEY_PATH: /app/secrets/staff-public.pem
+  JWT_CUSTOMER_PUBLIC_KEY_PATH: /app/secrets/customer-public.pem
+
 services:
   postgres:
     image: postgres:17            # pin the exact minor after Step 1 verification
@@ -72,27 +79,168 @@ services:
       - "8025:8025"   # web inbox
     networks: [ nepalgo-net ]
 
-  # --- Uncommented service-by-service as each phase builds it. All under profiles: ["app"] ---
-  # eureka-server:        Phase 1  | build: ./eureka-server        | ports: ["8761:8761"]
-  # api-gateway:          Phase 1  | build: ./api-gateway          | ports: ["8080:8080"]
-  # auth-service:         Phase 1  | build: ./auth-service         | ports: ["8081:8081"]
-  # catalog-service:      Phase 2  | build: ./catalog-service      | ports: ["8082:8082"]
-  # booking-service:      Phase 3  | build: ./booking-service      | ports: ["8083:8083"]
-  # payment-service:      Phase 4  | build: ./payment-service      | ports: ["8084:8084"]
-  # legal-service:        Phase 5  | build: ./legal-service        | ports: ["8085:8085"]
-  # notification-service: Phase 8  | build: ./notification-service | ports: ["8086:8086"]
-  # support-service:      Phase 8  | build: ./support-service      | ports: ["8087:8087"]
-  #
-  # Each entry follows the same shape as the Phase 1 services above:
-  #   build: ./<service>
-  #   ports: ["<port>:<port>"]
-  #   networks: [nepalgo-net]
-  #   depends_on: [postgres, eureka-server]  (add api-gateway too once it exists)
-  #   profiles: ["app"]
-  #
-  # mobile-app/ (Flutter, Phase 6) and admin-frontend/ (React+Vite, Phase 7) are not
-  # containerized here — they run with their own native tooling (flutter run,
-  # npm run dev), not docker compose.
+  # ---------------------------------------------------------------- the application
+  # Production-like local run of every service (each service's Dockerfile, prod
+  # profile, secrets mounted read-only). Off by default (profile "app"):
+  #   1) rebuild all JARs first:  build-all.ps1
+  #   2) start:                   docker compose --profile app up -d --build
+  # Only gateway (8080), Eureka (8761) and the admin UI (8090) are published;
+  # services talk on the private network, exactly like in production.
+  eureka-server:
+    build: ./eureka-server
+    image: nepalgo/eureka-server:local
+    container_name: nepalgo-eureka-server
+    profiles: ["app"]
+    mem_limit: 320m
+    ports: [ "8761:8761" ]
+    networks: [ nepalgo-net ]
+
+  api-gateway:
+    build: ./api-gateway
+    image: nepalgo/api-gateway:local
+    container_name: nepalgo-api-gateway
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:[*]}
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ eureka-server ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+    ports: [ "8080:8080" ]
+
+  auth-service:
+    build: ./auth-service
+    image: nepalgo/auth-service:local
+    container_name: nepalgo-auth-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: auth_svc
+      DB_PASSWORD: ${AUTH_SVC_DB_PASSWORD:-auth_dev_pw}
+      JWT_STAFF_PRIVATE_KEY_PATH: /app/secrets/staff-private.pem
+      JWT_CUSTOMER_PRIVATE_KEY_PATH: /app/secrets/customer-private.pem
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/firebase-service-account.json
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:-}
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  catalog-service:
+    build: ./catalog-service
+    image: nepalgo/catalog-service:local
+    container_name: nepalgo-catalog-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: catalog_svc
+      DB_PASSWORD: ${CATALOG_SVC_DB_PASSWORD:-catalog_dev_pw}
+      OPENWEATHERMAP_API_KEY: ${OPENWEATHERMAP_API_KEY:-}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
+      S3_ENDPOINT: http://rustfs:9000
+      S3_PUBLIC_URL_BASE: http://localhost:9000/destination-images
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server, rustfs ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  booking-service:
+    build: ./booking-service
+    image: nepalgo/booking-service:local
+    container_name: nepalgo-booking-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: booking_svc
+      DB_PASSWORD: ${BOOKING_SVC_DB_PASSWORD:-booking_dev_pw}
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  payment-service:
+    build: ./payment-service
+    image: nepalgo/payment-service:local
+    container_name: nepalgo-payment-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: payment_svc
+      DB_PASSWORD: ${PAYMENT_SVC_DB_PASSWORD:-payment_dev_pw}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
+      S3_ENDPOINT: http://rustfs:9000
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server, rustfs ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  legal-service:
+    build: ./legal-service
+    image: nepalgo/legal-service:local
+    container_name: nepalgo-legal-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: legal_svc
+      DB_PASSWORD: ${LEGAL_SVC_DB_PASSWORD:-legal_dev_pw}
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  notification-service:
+    build: ./notification-service
+    image: nepalgo/notification-service:local
+    container_name: nepalgo-notification-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: notification_svc
+      DB_PASSWORD: ${NOTIFICATION_SVC_DB_PASSWORD:-notification_dev_pw}
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      MAIL_FROM: "NepalGo <no-reply@nepalgo.local>"
+      OPS_ALERT_EMAIL: ops@nepalgo.local
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/firebase-service-account.json
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server, mailpit ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  support-service:
+    build: ./support-service
+    image: nepalgo/support-service:local
+    container_name: nepalgo-support-service
+    profiles: ["app"]
+    environment:
+      <<: *common-env
+      DB_URL: jdbc:postgresql://postgres:5432/nepalgo
+      DB_USERNAME: support_svc
+      DB_PASSWORD: ${SUPPORT_SVC_DB_PASSWORD:-support_dev_pw}
+    volumes: [ "./secrets:/app/secrets:ro" ]
+    depends_on: [ postgres, eureka-server ]
+    mem_limit: 420m
+    networks: [ nepalgo-net ]
+
+  admin-frontend:
+    build: ./admin-frontend
+    image: nepalgo/admin-frontend:local
+    container_name: nepalgo-admin-frontend
+    profiles: ["app"]
+    depends_on: [ api-gateway ]
+    mem_limit: 64m
+    ports: [ "8090:80" ]
+    networks: [ nepalgo-net ]
 
 volumes:
   nepalgo-pgdata:

@@ -67,6 +67,12 @@ public class StaffAuthService {
         staff.setLockedUntil(null);
         staffUserRepository.save(staff);
 
+        if (!staff.isMfaEnabled() && staff.getRole() == StaffRole.SUPER_ADMIN) {
+            // Spec 5b: TOTP is MANDATORY for SUPER_ADMIN. Enforced here on the
+            // server, not by a UI nudge: no access token until enrollment is done.
+            return new StaffLoginResponse(false, jwtService.generatePendingMfaToken(staff), null, true);
+        }
+
         if (!staff.isMfaEnabled()) {
             // D4: MFA is mandatory for SUPER_ADMIN, optional (but not yet
             // set up) for OPS — either way, no 2FA enrolled yet means we
@@ -77,12 +83,18 @@ public class StaffAuthService {
         }
 
         String pendingToken = jwtService.generatePendingMfaToken(staff);
-        return new StaffLoginResponse(true, pendingToken, null);
+        return new StaffLoginResponse(true, pendingToken, null, false);
     }
 
     @Transactional
     public MfaEnrollStartResponse startMfaEnrollment(Long staffId) {
         StaffUser staff = getStaffOrThrow(staffId);
+        // Never let a (possibly stolen) session swap the authenticator of an
+        // account that already has one. Lost phone -> another SUPER_ADMIN uses
+        // "reset MFA", which is audited.
+        if (staff.isMfaEnabled()) {
+            throw new MfaAlreadyEnabledException();
+        }
         String secret = totpService.generateSecret();
         staff.setTotpSecretEncrypted(totpSecretEncryptor.encrypt(secret));
         staffUserRepository.save(staff);
@@ -178,8 +190,12 @@ public class StaffAuthService {
         return new StaffAuthTokenResponse(accessToken, rawRefreshToken, staff.getRole().name());
     }
 
+    public Long pendingTokenStaffId(String pendingToken) {
+        return jwtService.verifyPendingMfaToken(pendingToken);
+    }
+
     private StaffLoginResponse issueFullLogin(StaffUser staff) {
-        return new StaffLoginResponse(false, null, issueTokens(staff));
+        return new StaffLoginResponse(false, null, issueTokens(staff), false);
     }
 
     private void revokeEntireFamily(java.util.UUID family) {

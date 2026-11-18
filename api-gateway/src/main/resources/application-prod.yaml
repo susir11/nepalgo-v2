@@ -1,0 +1,38 @@
+# PRODUCTION profile — activate with SPRING_PROFILES_ACTIVE=prod.
+# Every value comes from the environment and has NO default: a missing secret
+# stops the service at startup ("fail fast") instead of silently falling back
+# to a local-dev value. See RUNBOOK.md for the full variable list.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info     # NOT 'gateway': the route table is internal knowledge
+  endpoint:
+    health:
+      probes:
+        enabled: true              # /actuator/health/liveness + /readiness for the container platform
+      show-details: never
+
+logging:
+  structured:
+    format:
+      console: ecs                 # one JSON line per log event -> searchable in any log platform
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                # Real app/admin origins only, comma-separated, e.g.
+                # https://admin.nepalgo.com,https://app.nepalgo.com  (never "*")
+                allowed-origin-patterns: ${ALLOWED_ORIGINS}

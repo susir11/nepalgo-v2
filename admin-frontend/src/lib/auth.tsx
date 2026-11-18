@@ -8,7 +8,9 @@ type Session = { staffId: number; role: "SUPER_ADMIN" | "OPS" } | null;
 type Ctx = {
   session: Session;
   ready: boolean;
-  login: (email: string, password: string) => Promise<{ mfa: true; pendingToken: string } | { mfa: false }>;
+  login: (email: string, password: string) => Promise<{ mfa: true; pendingToken: string } | { enroll: true; pendingToken: string } | { mfa: false }>;
+  startEnroll: (pendingToken: string) => Promise<{ secret: string; qrContentUri: string }>;
+  confirmEnroll: (pendingToken: string, code: string) => Promise<void>;
   verifyMfa: (pendingToken: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -37,9 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ready,
     async login(email, password) {
       const r = await api("/api/v1/admin/auth/login", { body: { email, password }, auth: false });
+      if (r.mfaEnrollmentRequired) return { enroll: true, pendingToken: r.pendingToken };
       if (r.mfaRequired) return { mfa: true, pendingToken: r.pendingToken };
       setTokens(r.tokens.accessToken, r.tokens.refreshToken);
       return { mfa: false };
+    },
+    // SUPER_ADMIN without MFA: the server gives no access token until TOTP is enrolled.
+    startEnroll: (pendingToken) => api("/api/v1/admin/auth/mfa/enroll/start", { body: { pendingToken }, auth: false }),
+    async confirmEnroll(pendingToken, code) {
+      const r = await api("/api/v1/admin/auth/mfa/enroll/confirm", { body: { pendingToken, code }, auth: false });
+      setTokens(r.accessToken, r.refreshToken);
     },
     async verifyMfa(pendingToken, code) {
       const r = await api("/api/v1/admin/auth/mfa/verify", { body: { pendingToken, code }, auth: false });

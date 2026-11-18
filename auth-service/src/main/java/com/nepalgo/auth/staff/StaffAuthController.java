@@ -20,16 +20,26 @@ public class StaffAuthController {
         return ResponseEntity.ok(staffAuthService.login(request.email(), request.password()));
     }
 
+    // Enrollment accepts EITHER a full staff access token (OPS opting in) OR the
+    // login pending token (SUPER_ADMIN forced to enroll before getting access).
     @PostMapping("/mfa/enroll/start")
-    public ResponseEntity<MfaEnrollStartResponse> enrollStart(@AuthenticationPrincipal Jwt jwt) {
-        Long staffId = Long.parseLong(jwt.getSubject());
-        return ResponseEntity.ok(staffAuthService.startMfaEnrollment(staffId));
+    public ResponseEntity<MfaEnrollStartResponse> enrollStart(@AuthenticationPrincipal Jwt jwt, @RequestBody(required = false) MfaConfirmBody body) {
+        return ResponseEntity.ok(staffAuthService.startMfaEnrollment(staffIdFrom(jwt, body)));
     }
 
     @PostMapping("/mfa/enroll/confirm")
     public ResponseEntity<StaffAuthTokenResponse> enrollConfirm(@AuthenticationPrincipal Jwt jwt, @RequestBody MfaConfirmBody body) {
-        Long staffId = Long.parseLong(jwt.getSubject());
-        return ResponseEntity.ok(staffAuthService.confirmMfaEnrollment(staffId, body.code()));
+        return ResponseEntity.ok(staffAuthService.confirmMfaEnrollment(staffIdFrom(jwt, body), body.code()));
+    }
+
+    private Long staffIdFrom(Jwt jwt, MfaConfirmBody body) {
+        if (body != null && body.pendingToken() != null && !body.pendingToken().isBlank()) {
+            return staffAuthService.pendingTokenStaffId(body.pendingToken());
+        }
+        if (jwt == null) {
+            throw new com.nepalgo.auth.staff.InvalidPendingTokenException("Sign in first");
+        }
+        return Long.parseLong(jwt.getSubject());
     }
 
     @PostMapping("/mfa/verify")
@@ -48,5 +58,5 @@ public class StaffAuthController {
         return ResponseEntity.noContent().build();
     }
 
-    public record MfaConfirmBody(String code) {}
+    public record MfaConfirmBody(String code, String pendingToken) {}
 }

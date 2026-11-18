@@ -1,0 +1,11 @@
+src
+.mvn
+mvnw
+mvnw.cmd
+*.md
+.git*
+target/classes
+target/test-classes
+target/generated*
+target/maven*
+target/surefire*
