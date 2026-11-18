@@ -108,6 +108,7 @@ class Api {
 
   Future<T> get<T>(String path, {Map<String, dynamic>? query}) => _wrap(() => dio.get(path, queryParameters: query));
   Future<T> post<T>(String path, [Object? body]) => _wrap(() => dio.post(path, data: body ?? {}));
+  Future<T> delete<T>(String path, [Object? body]) => _wrap(() => dio.delete(path, data: body));
   Future<T> postNoAuth<T>(String path, Object body) => _wrap(() => dio.post(path, data: body, options: Options(extra: {'noAuth': true})));
 
   Future<T> _wrap<T>(Future<Response> Function() call) async {

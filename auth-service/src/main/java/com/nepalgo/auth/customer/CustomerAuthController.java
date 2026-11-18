@@ -17,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerAuthController {
 
     private final CustomerAuthService customerAuthService;
+    private final AccountDeletionService accountDeletionService;
+
+    // Typed confirmation guards against an accidental or replayed call deleting an account.
+    public record DeleteAccountRequest(
+            @jakarta.validation.constraints.NotNull
+            @jakarta.validation.constraints.Pattern(regexp = "DELETE", message = "must be DELETE") String confirmation) {}
 
     @PostMapping("/firebase/exchange")
     public ResponseEntity<AuthTokenResponse> exchange(@Valid @RequestBody FirebaseExchangeRequest request) {
@@ -38,5 +44,14 @@ public class CustomerAuthController {
     public ResponseEntity<CustomerProfileResponse> me(@AuthenticationPrincipal Jwt jwt) {
         Long customerId = Long.parseLong(jwt.getSubject());
         return ResponseEntity.ok(customerAuthService.getProfile(customerId));
+    }
+
+    // Spec 15.2: the customer deletes their own account from Profile.
+    // 204 = gone (also on retry), 409 = blocked (payment being verified),
+    // 503 = another service couldn't confirm; nothing deleted, safe to retry.
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody DeleteAccountRequest request) {
+        accountDeletionService.deleteAccount(Long.parseLong(jwt.getSubject()));
+        return ResponseEntity.noContent().build();
     }
 }

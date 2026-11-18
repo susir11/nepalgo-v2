@@ -15,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Optional<Booking> findByVoucherCode(String voucherCode);
+
+    List<Booking> findByCustomerId(Long customerId);
     boolean existsByVoucherCode(String voucherCode);
     List<Booking> findByStatusAndAwaitingPaymentSinceBeforeAndInvoiceNumberIsNotNull(BookingStatus status, Instant cutoff);
     Page<Booking> findByCustomerIdOrderByCreatedAtDesc(Long customerId, Pageable pageable);

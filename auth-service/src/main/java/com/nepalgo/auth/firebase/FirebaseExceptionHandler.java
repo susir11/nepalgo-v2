@@ -36,6 +36,35 @@ public class FirebaseExceptionHandler {
         return problem;
     }
 
+    // Unknown / expired / reused customer refresh token -> 401 so the app signs the
+    // user out cleanly (before this handler existed it surfaced as a 500).
+    @ExceptionHandler(com.nepalgo.auth.customer.InvalidRefreshTokenException.class)
+    public ProblemDetail handleInvalidCustomerRefresh(com.nepalgo.auth.customer.InvalidRefreshTokenException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+        problem.setTitle("Invalid Refresh Token");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "AUTH_INVALID_REFRESH_TOKEN");
+        return problem;
+    }
+
+    @ExceptionHandler(com.nepalgo.auth.customer.AccountDeletionBlockedException.class)
+    public ProblemDetail handleDeletionBlocked(com.nepalgo.auth.customer.AccountDeletionBlockedException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Account Deletion Not Possible Yet");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "ACCOUNT_DELETION_BLOCKED");
+        return problem;
+    }
+
+    @ExceptionHandler(com.nepalgo.auth.customer.DeletionDependencyUnavailableException.class)
+    public ProblemDetail handleDeletionUnavailable(com.nepalgo.auth.customer.DeletionDependencyUnavailableException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+        problem.setTitle("Service Unavailable");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "ACCOUNT_DELETION_UNAVAILABLE");
+        return problem;
+    }
+
     @ExceptionHandler(InvalidMfaCodeException.class)
     public ProblemDetail handleInvalidMfaCode(InvalidMfaCodeException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);

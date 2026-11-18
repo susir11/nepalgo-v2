@@ -110,6 +110,15 @@ class AuthController extends Notifier<AuthState> {
     state = const AuthState(AuthStatus.signedOut);
   }
 
+  /// Spec 15.2: permanently deletes the account on the server (bookings are
+  /// anonymised, open requests withdrawn, tax records kept), then forgets the
+  /// session locally. Throws ApiException (409 = blocked for now, 503 = retry).
+  Future<void> deleteAccount() async {
+    await _api.delete('/api/v1/auth/me', {'confirmation': 'DELETE'});
+    await ref.read(tokenStoreProvider).clear();
+    state = const AuthState(AuthStatus.signedOut);
+  }
+
   void sessionExpired() => state = const AuthState(AuthStatus.signedOut);
 
   Future<void> refreshProfile() => _loadProfile();

@@ -405,6 +405,49 @@ public class BookingService {
         }
     }
 
+    public record ErasureResult(int bookingsWithdrawn, int bookingsAnonymized) {}
+
+    // Account deletion (spec 15.2), booking-service's part. Called by auth-service
+    // BEFORE it deletes the account (fail-closed). Think of a bank closing an
+    // account: open applications are cancelled, but the statements of past
+    // transactions stay on file for the tax authority - with the customer's
+    // personal details struck out.
+    //  - PENDING_APPROVAL / AWAITING_PAYMENT -> WITHDRAWN (8.9 rules, credits released)
+    //  - VERIFYING_PAYMENT -> refuse: money is in flight; deleting now would
+    //    remove the details staff need to verify and refund it. The app tells the
+    //    customer to try again after verification.
+    //  - every booking keeps its row, customer_id reference, voucher and amounts,
+    //    but loses legal name, passport number, e-mail and free-text request.
+    // Idempotent: running it twice changes nothing more.
+    @Transactional
+    public ErasureResult eraseCustomer(Long customerId) {
+        List<Booking> bookings = bookingRepository.findByCustomerId(customerId);
+        if (bookings.stream().anyMatch(b -> b.getStatus() == BookingStatus.VERIFYING_PAYMENT)) {
+            throw new InvalidBookingStateException(
+                    "A payment is being verified. The account can be deleted once that is finished.");
+        }
+        int withdrawn = 0, anonymized = 0;
+        for (Booking b : bookings) {
+            if (b.getStatus() == BookingStatus.PENDING_APPROVAL || b.getStatus() == BookingStatus.AWAITING_PAYMENT) {
+                b.setStatus(BookingStatus.WITHDRAWN);
+                paymentClient.releaseCreditsQuietly(b.getId());
+                logAudit(null, "BOOKING_WITHDRAWN", b.getId(), customerId, "Account deleted by customer");
+                withdrawn++;
+            }
+            if (b.getLeadBookerLegalName() != null || b.getLeadBookerPassportNumber() != null
+                    || b.getLeadBookerEmail() != null || b.getSpecialRequestText() != null) {
+                b.setLeadBookerLegalName(null);
+                b.setLeadBookerPassportNumber(null);
+                b.setLeadBookerEmail(null);
+                b.setSpecialRequestText(null);
+                logAudit(null, "PERSONAL_DATA_ERASED", b.getId(), customerId, "Account deleted by customer");
+                anonymized++;
+            }
+        }
+        bookingRepository.saveAll(bookings);
+        return new ErasureResult(withdrawn, anonymized);
+    }
+
     @Transactional
     public BookingResponse withdraw(Long customerId, Long bookingId) {
         Booking booking = getBookingOrThrow(bookingId);

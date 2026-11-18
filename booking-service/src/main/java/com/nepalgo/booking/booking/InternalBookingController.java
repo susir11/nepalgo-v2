@@ -16,6 +16,7 @@ import java.time.LocalDate;
 public class InternalBookingController {
 
     private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
     public record BookingSummary(Long id, Long customerId, String status, String origin, String voucherCode,
                                  String destinationName, LocalDate arrivalDate, int durationDays, int partySize,
@@ -29,5 +30,11 @@ public class InternalBookingController {
                 b.getOrigin().name(), b.getVoucherCode(), b.getDestinationNameSnapshot(), b.getArrivalDate(),
                 b.getDurationDays(), b.getPartySize(), b.isGuideRequested(), b.isPorterRequested(),
                 b.getSpecialRequestText(), b.getLeadBookerLegalName(), b.getLeadBookerEmail()));
+    }
+
+    // Account deletion: see BookingService.eraseCustomer. 409 while a payment is being verified.
+    @PostMapping("/customers/{customerId}/erase")
+    public ResponseEntity<BookingService.ErasureResult> erase(@PathVariable Long customerId) {
+        return ResponseEntity.ok(bookingService.eraseCustomer(customerId));
     }
 }

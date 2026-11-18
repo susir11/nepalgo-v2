@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "retired_nepalgo_ids")
 @Getter
 @NoArgsConstructor
+@lombok.AllArgsConstructor
 public class RetiredNepalgoId {
     @Id
     @Column(name = "nepalgo_id", length = 8)

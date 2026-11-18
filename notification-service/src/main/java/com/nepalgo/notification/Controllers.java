@@ -37,6 +37,22 @@ public final class Controllers {
     @RequiredArgsConstructor
     public static class Internal {
         private final EventIntake intake;
+        private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+        // Account deletion (spec 15.2): auth-service calls this BEFORE deleting the
+        // account. Removes everything personal we hold for the customer: their inbox,
+        // any queued e-mail/push (an e-mail to a deleted account must never go out
+        // later) and their device tokens. Admin-side alerts are operational records
+        // and stay. Idempotent: a retry simply deletes nothing.
+        @PostMapping("/customers/{customerId}/erase")
+        @Transactional
+        public Map<String, Object> erase(@PathVariable Long customerId) {
+            int deliveries = jdbc.update("DELETE FROM deliveries WHERE notification_id IN "
+                    + "(SELECT id FROM notifications WHERE customer_id = ? AND audience = 'CUSTOMER')", customerId);
+            int notes = jdbc.update("DELETE FROM notifications WHERE customer_id = ? AND audience = 'CUSTOMER'", customerId);
+            int devices = jdbc.update("DELETE FROM device_tokens WHERE customer_id = ?", customerId);
+            return Map.of("notificationsDeleted", notes, "deliveriesDeleted", deliveries, "deviceTokensDeleted", devices);
+        }
 
         @PostMapping("/events")
         public ResponseEntity<Map<String, Object>> event(@RequestBody EventIntake.Event e) {

@@ -94,12 +94,18 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  // Account deletion needs a cross-service erasure workflow (spec 15.2); until
-  // that backend ships, route the request to support so it's handled manually.
-  void _deleteAccount(BuildContext context, WidgetRef ref, Map p) {
-    final c = ref.read(companyProfileProvider).value;
-    openWhatsApp(context, c?['supportWhatsApp'] ?? '',
-        'Hi NepalGo team, I\'d like to delete my account. NepalGo ID ${p['nepalgoId']}, email ${p['email']}.');
+  // Spec 15.2 + App Store / Play rule: deletion must be possible inside the app.
+  // Confirm-before-commit: the customer reads exactly what happens and types
+  // DELETE, because this cannot be undone.
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref, Map p) async {
+    final confirmed = await showDialog<bool>(context: context, builder: (_) => const _DeleteAccountDialog());
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await ref.read(authProvider.notifier).deleteAccount();
+      if (context.mounted) toast(context, 'Your account has been deleted.');
+    } catch (e) {
+      if (context.mounted) showError(context, e);
+    }
   }
 }
 
@@ -131,6 +137,57 @@ class _CreditCard extends StatelessWidget {
           if (c['appliedToBookingId'] != null) const Text('Applied to a trip request', style: TextStyle(color: Colors.white70, fontSize: 12)),
         ]),
       ),
+    );
+  }
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ok = _ctrl.text.trim() == 'DELETE';
+    return AlertDialog(
+      title: const Text('Delete your account?'),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('This cannot be undone.'),
+          const SizedBox(height: 12),
+          const Text('• Trip requests that are not paid yet are withdrawn.\n'
+              '• Your name, e-mail and passport number are removed from your bookings.\n'
+              '• Unused travel credits are lost.\n'
+              '• Your NepalGo ID is retired and never given to anyone else.\n'
+              '• Invoices of paid trips are kept, because tax law requires it.'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _ctrl,
+            autocorrect: false,
+            textCapitalization: TextCapitalization.characters,
+            decoration: const InputDecoration(labelText: 'Type DELETE to confirm'),
+            onChanged: (_) => setState(() {}),
+          ),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Keep my account')),
+        FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: context.ng.error),
+          onPressed: ok ? () => Navigator.pop(context, true) : null,
+          child: const Text('Delete account'),
+        ),
+      ],
     );
   }
 }

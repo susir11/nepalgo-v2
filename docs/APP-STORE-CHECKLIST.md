@@ -6,7 +6,6 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 
 | Item | Why | What to build |
 |---|---|---|
-| **In-app account deletion** | Apple (Guideline 5.1.1(v)) and Google Play both require apps with account creation to let users delete the account *inside the app* (Play also wants a web link). Today the button opens WhatsApp. | Backend erasure workflow (spec 15.2): auth deletes account + retires NepalGo ID, booking anonymises name/email/passport, payment keeps tax records, pending bookings withdrawn. Then wire the Profile button. |
 | **Sign in with Apple** (iOS) | If the iOS app offers Google/Facebook login, Apple requires Sign in with Apple too (Guideline 4.8). | Add when social login is enabled (FlutterFire config files needed). |
 | **Public privacy-policy URL** | Both stores need a public web URL, not an in-app screen. | Serve the current Privacy Policy as a public HTML page (e.g. `https://nepalgo.com/privacy`, rendered from `GET /api/legal/privacy/current`). |
 
@@ -55,6 +54,8 @@ No card data is collected (Payoneer). No advertising, no data sale. Data encrypt
 - **Export compliance (iOS)**: only standard HTTPS/TLS → exempt (`ITSAppUsesNonExemptEncryption = NO`).
 
 ## ✅ Already in place
+
+- **In-app account deletion** (Profile → Delete account, typed DELETE confirmation): open requests withdrawn, personal data erased from bookings, inbox/devices erased, Firebase login deleted, NepalGo ID retired; invoices kept. Google Play also wants a **web** deletion link: point it at a support form / e-mail until a web page exists.
 
 - Terms + Privacy versioned, consent recorded per booking (legal-service).
 - Light / Dark / System appearance; accessible labels on nav and icon buttons; customer copy never shows raw status codes.
