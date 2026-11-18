@@ -8,8 +8,11 @@ import { date, usd } from "../lib/format";
 export default function Dashboard() {
   const stats = useGet<Record<string, number>>("/api/admin/bookings/stats");
   const refunds = useGet<any[]>("/api/admin/refund-requests?status=PENDING");
-  const urgent = useGet<any>("/api/admin/bookings?sort=urgency&size=8&page=0");
+  const urgent = useGet<any>("/api/admin/bookings?sort=urgency&size=20&page=0");
   const s = stats.data ?? {};
+  // Only bookings a human must act on; finished ones (cancelled, withdrawn…) don't belong on "Today".
+  const actionable = (urgent.data?.content ?? [])
+    .filter((b: any) => ["VERIFYING_PAYMENT", "PENDING_APPROVAL", "AWAITING_PAYMENT"].includes(b.status)).slice(0, 8);
 
   const tiles = [
     { label: "Pending availability review", value: s.PENDING_APPROVAL, to: "/bookings?status=PENDING_APPROVAL", hint: "Price the bill, then Approve & Issue" },
@@ -34,9 +37,9 @@ export default function Dashboard() {
       </div>
 
       <Card className="mt-6" title="Most urgent bookings" actions={<Link className="text-sm font-semibold text-primary" to="/bookings">Open queue →</Link>}>
-        {urgent.isLoading ? <Loading /> : (
+        {urgent.isLoading ? <Loading /> : actionable.length === 0 ? <p className="py-6 text-center text-sm text-muted">Nothing waiting on you. 🎉</p> : (
           <Table head={["Voucher", "Status", "Destination", "Arrival", "Origin", "Created"]}>
-            {urgent.data?.content?.map((b: any) => (
+            {actionable.map((b: any) => (
               <tr key={b.id} className="hover:bg-background/40">
                 <Td><Link className="font-semibold text-primary" to={`/bookings/${b.id}`}>{b.voucherCode}</Link></Td>
                 <Td><StatusBadge status={b.status} /></Td>

@@ -220,7 +220,8 @@ function BillView({ bill, onCredit }: { bill: any; onCredit: (c: any, accept: bo
       <Table head={["#", "Description", "Qty", "Unit (NPR)", "Total (NPR)", "Total (USD)"]}>
         {bill.lineItems.map((l: any) => (
           <tr key={l.id}><Td>{l.position}</Td><Td>{l.itineraryDay ? `Day ${l.itineraryDay} — ` : ""}{l.description} <Badge>{label(l.category)}</Badge></Td>
-            <Td>{l.quantity}</Td><Td>{npr(l.unitPriceNpr)}</Td><Td>{npr(l.lineTotalNpr)}</Td><Td>{usd(l.lineTotalUsd)}</Td></tr>
+            <Td>{l.quantity}</Td><Td className="whitespace-nowrap">{npr(l.unitPriceNpr)}</Td>
+            <Td className="whitespace-nowrap">{npr(l.lineTotalNpr)}</Td><Td className="whitespace-nowrap">{usd(l.lineTotalUsd)}</Td></tr>
         ))}
       </Table>
       <div className="ml-auto max-w-sm">

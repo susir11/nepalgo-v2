@@ -55,9 +55,9 @@ PENDING_APPROVAL → AWAITING_PAYMENT → VERIFYING_PAYMENT → CONFIRMED; plus 
 - Known gaps: SUPER_ADMIN without MFA enrolled can still log in (auth-service only "nudges") → enforce server-side; manual booking uses destination's DEFAULT itinerary (no ad-hoc itinerary yet); customer account deletion (spec 15.2) not built; staff refresh token idle 30 min / absolute 8 h.
 - Flutter SDK: Susir is installing it himself (2026-11-16). Phase 6 waits for that; Phase 8 (notification + support) can proceed.
 - Claude may stop/restart services itself: `taskkill` allowed in `.claude/settings.local.json`; relaunch via IntelliJ MCP run configs (they carry EnvFile). Test helper + e2e scripts live in the session scratchpad (`ng.py`, `e2e_phase4.py`).
-- Phase 4 remaining: BS dates (embed calendar table, cross-check vs a 2nd source), number-to-words, PDF invoice (OpenPDF), receipt storage (private bucket, presigned URLs, duplicate check), Payoneer link, store-credit ledger, RefundRequest queue, booking→payment `/internal/**` calls (fail-closed, idempotent), drop placeholder columns from `bookings`, Postman folders, commit.
 - Phase 4 decisions approved: all defaults (D1–D7). Feature flag `maker-checker-segregation-enforced` default false; frozen `fx_rate` copy on each bill; partial unique index allows one APPROVED FX rate per pair.
-- Deferred: admin customer search (Ph7), real ConsentRecord (Ph5), rotate OpenWeatherMap key, untested: force-majeure cancel + admin detail response.
+- Deferred: rotate OpenWeatherMap key.
+- Browser testing: Claude-in-Chrome tools don't load in this setup. Working method: launch visible Chrome with `--remote-debugging-port=9333 --user-data-dir=<scratch profile>`, then IntelliJ's `chrome-devtools` CLI (`mcp__idea__get_chrome_connect_cli`) `start --browserUrl http://127.0.0.1:9333` (its own launch mode is always headless). Wrap every CLI call in `timeout`.
 
 ## Testing
 `postman/NepalGo.postman_collection.json` (auto token scripts; env vars authUrl/catalogUrl/bookingUrl/…). Payment-service folders still to be added. Import env separately; fill firebaseApiKey + customerPassword.
