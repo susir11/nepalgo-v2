@@ -143,7 +143,7 @@ public class BookingService {
         return new BookingResponse(b.getId(), b.getVoucherCode(), b.getStatus().name(),
                 b.getDestinationNameSnapshot(), b.getPartySize(), b.getArrivalDate(), b.getDurationDays(),
                 b.isGuideRequested(), b.isPorterRequested(), b.getSpecialRequestText(), b.getCreatedAt(),
-                b.getInvoiceNumber(), b.getRejectionReason());
+                b.getInvoiceNumber(), b.getRejectionReason(), b.getDestinationId(), b.getItinerarySnapshot());
     }
 
     // "Approve & Issue Bill" (spec 8, Step 2). Order matters:
