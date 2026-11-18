@@ -1,14 +1,17 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
+import { useGet } from "../lib/hooks";
 
 type Item = { to: string; label: string; superOnly?: boolean };
 const NAV: { group: string; items: Item[] }[] = [
   { group: "Operations", items: [
     { to: "/", label: "Dashboard" },
+    { to: "/alerts", label: "Alerts" },
     { to: "/bookings", label: "Booking queue" },
     { to: "/bookings/new", label: "Create booking manually" },
     { to: "/customers", label: "Customers" },
     { to: "/refunds", label: "Refund requests" },
+    { to: "/support", label: "Support inbox" },
   ] },
   { group: "Catalogue", items: [{ to: "/destinations", label: "Destinations & itineraries" }] },
   { group: "Money", items: [
@@ -29,6 +32,8 @@ export default function Layout() {
   const { session, logout } = useAuth();
   const nav = useNavigate();
   const isSuper = session?.role === "SUPER_ADMIN";
+  const alerts = useGet<any>("/api/admin/notifications");
+  const unread = alerts.data?.unread ?? 0;
   return (
     <div className="flex min-h-full flex-col md:flex-row">
       <aside className="bg-nav px-4 py-5 text-white md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto">
@@ -45,7 +50,7 @@ export default function Layout() {
               {g.items.filter((i) => !i.superOnly || isSuper).map((i) => (
                 <NavLink key={i.to} to={i.to} end={i.to === "/" || i.to === "/bookings"}
                   className={({ isActive }) => `block whitespace-nowrap rounded-full px-3 py-2 text-sm ${isActive ? "bg-primary text-white" : "text-white/80 hover:bg-white/10"}`}>
-                  {i.label}
+                  {i.label}{i.to === "/alerts" && unread > 0 && <span className="ml-2 rounded-full bg-secondary px-2 text-xs font-bold text-nav">{unread}</span>}
                 </NavLink>
               ))}
             </div>

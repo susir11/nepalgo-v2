@@ -36,6 +36,7 @@ public class RefundService {
     private final StoreCreditService storeCreditService;
     private final BillService billService;
     private final AuditService auditService;
+    private final com.nepalgo.payment.client.NotificationPublisher notifications;
 
     public record CancellationOutcome(Long bookingId, String tier, BigDecimal refundPercent,
                                       Long refundRequestId, BigDecimal cashRefundUsd,
@@ -125,7 +126,9 @@ public class RefundService {
         r.setCompletedBy(adminId);
         r.setCompletedAt(Instant.now());
         refundRepository.save(r);
-        // TODO Phase 8: notification-service push + email "your refund was sent" (spec 19).
+        // Spec 19: cash refund issued -> customer push + email.
+        notifications.publish("REFUND_SENT", "REFUND_SENT:refund:" + r.getId(), r.getCustomerId(), r.getBookingId(),
+                java.util.Map.of("amountUsd", r.getAmountUsd(), "payoutReference", r.getPayoutReference()));
         auditService.log(adminId, "REFUND_COMPLETED", "REFUND_REQUEST", r.getId(),
                 "$" + r.getAmountUsd() + " ref " + r.getPayoutReference());
         return RefundView.of(r);

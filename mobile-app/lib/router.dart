@@ -6,7 +6,9 @@ import 'core/providers.dart';
 import 'core/theme.dart';
 import 'features/auth_screens.dart';
 import 'features/destination.dart';
+import 'features/chat.dart';
 import 'features/explore.dart';
+import 'features/inbox.dart';
 import 'features/onboarding.dart';
 import 'features/profile.dart';
 import 'features/support.dart';
@@ -48,6 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/signup', builder: (_, _) => const SignUpScreen()),
       GoRoute(path: '/forgot', builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(path: '/destination/:id', builder: (_, s) => DestinationScreen(id: int.parse(s.pathParameters['id']!))),
+      GoRoute(path: '/inbox', builder: (_, _) => const InboxScreen()),
+      GoRoute(path: '/chat', builder: (_, _) => const ChatListScreen()),
       GoRoute(path: '/trip/:id', builder: (_, s) => TripDetailScreen(id: int.parse(s.pathParameters['id']!))),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(shell: shell),

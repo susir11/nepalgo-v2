@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/providers.dart';
 import '../core/theme.dart';
 import '../core/widgets.dart';
+import 'chat.dart';
 
 final legalDocProvider = FutureProvider.family<Map<String, dynamic>, String>(
     (ref, type) => ref.read(apiProvider).get<Map<String, dynamic>>('/api/legal/$type/current'));
@@ -36,6 +38,14 @@ class SupportScreen extends ConsumerWidget {
             const Icon(Icons.arrow_forward_rounded, color: Colors.white),
           ]),
         ),
+        // Dormant native chat (spec 12/20): only appears when the flag is ON.
+        if (ref.watch(supportEnabledProvider).value == true) ...[
+          const SizedBox(height: 12),
+          NgCard(
+            onTap: () => context.push('/chat'),
+            child: const Row(children: [Icon(Icons.forum_rounded), SizedBox(width: 12), Expanded(child: Text('Chat in the app or request a callback')), Icon(Icons.chevron_right)]),
+          ),
+        ],
         const SectionTitle('About NepalGo'),
         NgCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

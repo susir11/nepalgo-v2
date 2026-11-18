@@ -61,6 +61,17 @@ services:
       retries: 10
     networks: [ nepalgo-net ]
 
+  # Dev-only fake SMTP server (Phase 8). notification-service sends mail to
+  # localhost:1025; nothing ever leaves the machine. Read the inbox at
+  # http://localhost:8025. Production uses a real provider (Phase 9).
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: nepalgo-mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # web inbox
+    networks: [ nepalgo-net ]
+
   # --- Uncommented service-by-service as each phase builds it. All under profiles: ["app"] ---
   # eureka-server:        Phase 1  | build: ./eureka-server        | ports: ["8761:8761"]
   # api-gateway:          Phase 1  | build: ./api-gateway          | ports: ["8080:8080"]

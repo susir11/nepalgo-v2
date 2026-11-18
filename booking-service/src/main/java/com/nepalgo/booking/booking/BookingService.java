@@ -5,6 +5,7 @@ import com.nepalgo.booking.client.CatalogClient;
 import com.nepalgo.booking.client.PaymentClient;
 import com.nepalgo.booking.client.LegalClient;
 import com.nepalgo.booking.client.AuthClient;
+import com.nepalgo.booking.client.NotificationPublisher;
 import com.nepalgo.booking.dto.BookingResponse;
 import com.nepalgo.booking.dto.CreateBookingRequest;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class BookingService {
     private final PaymentClient paymentClient;
     private final LegalClient legalClient;
     private final AuthClient authClient;
+    private final NotificationPublisher notifications;
 
     @Transactional
     public BookingResponse create(Long customerId, CreateBookingRequest request) {
@@ -162,6 +164,8 @@ public class BookingService {
         booking.setAwaitingPaymentSince(Instant.now());
         bookingRepository.save(booking);
         logAudit(adminId, "BOOKING_APPROVED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber());
+        notifications.publish("BILL_ISSUED", "BILL_ISSUED:" + bill.invoiceNumber(), booking.getCustomerId(), bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "amountUsd", bill.payableUsd()));
         return toAdminSummary(booking);
     }
 
@@ -180,6 +184,8 @@ public class BookingService {
         booking.setAwaitingPaymentSince(Instant.now());
         bookingRepository.save(booking);
         logAudit(adminId, "BILL_ISSUED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber());
+        notifications.publish("MANUAL_BOOKING_BILL_READY", "BILL_ISSUED:" + bill.invoiceNumber(), booking.getCustomerId(), bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "amountUsd", bill.payableUsd()));
         return toAdminSummary(booking);
     }
 
@@ -192,6 +198,8 @@ public class BookingService {
         bookingRepository.save(booking);
         paymentClient.releaseCreditsQuietly(bookingId);   // reserved travel credits go back to the wallet
         logAudit(adminId, "BOOKING_REJECTED", bookingId, booking.getCustomerId(), reason);
+        notifications.publish("BOOKING_REJECTED", "BOOKING_REJECTED:booking:" + bookingId, booking.getCustomerId(), bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "reason", reason));
         return toAdminSummary(booking);
     }
 
@@ -340,6 +348,8 @@ public class BookingService {
         booking.setStatus(BookingStatus.VERIFYING_PAYMENT);
         bookingRepository.save(booking);
         logAudit(null, "PAYMENT_RECEIPT_SUBMITTED", bookingId, customerId, null);
+        notifications.publish("RECEIPT_SUBMITTED", "RECEIPT_SUBMITTED:receipt:" + stored.receiptId(), customerId, bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "receiptCode", stored.receiptCode()));
         return toResponse(booking);
     }
 
@@ -354,6 +364,8 @@ public class BookingService {
         booking.setRejectionReason(null);
         bookingRepository.save(booking);
         logAudit(adminId, "PAYMENT_VERIFIED", bookingId, booking.getCustomerId(), "bill " + bill.invoiceNumber() + " locked");
+        notifications.publish("PAYMENT_VERIFIED", "PAYMENT_VERIFIED:booking:" + bookingId, booking.getCustomerId(), bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "invoiceNumber", bill.invoiceNumber()));
         return toAdminSummary(booking);
     }
 
@@ -367,10 +379,13 @@ public class BookingService {
         booking.setStatus(BookingStatus.AWAITING_PAYMENT);
         booking.setAwaitingPaymentSince(Instant.now());
         booking.setRejectionReason(reason);
+        Long rejectedReceiptId = booking.getPaymentReceiptId();
         booking.setPaymentReceiptId(null);
         booking.setPaymentReceiptCode(null);
         bookingRepository.save(booking);
         logAudit(adminId, "PAYMENT_REJECTED", bookingId, booking.getCustomerId(), reason);
+        notifications.publish("PAYMENT_REJECTED", "PAYMENT_REJECTED:receipt:" + rejectedReceiptId, booking.getCustomerId(), bookingId,
+                java.util.Map.of("destinationName", booking.getDestinationNameSnapshot(), "voucherCode", booking.getVoucherCode(), "reason", reason));
         return toAdminSummary(booking);
     }
 

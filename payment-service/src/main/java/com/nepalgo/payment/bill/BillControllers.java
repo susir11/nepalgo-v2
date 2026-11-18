@@ -144,6 +144,12 @@ public final class BillControllers {
             return ResponseEntity.ok(status);
         }
 
+        // notification-service attaches this to the "you're confirmed" e-mail (spec 19).
+        @GetMapping("/pdf")
+        public ResponseEntity<byte[]> pdf(@RequestParam Long bookingId) {
+            return pdfResponse(billService.adminPdf(billService.statusForBooking(bookingId).billId()));
+        }
+
         @GetMapping("/status")
         public ResponseEntity<InternalBillStatus> get(@RequestParam Long bookingId) {
             return ResponseEntity.ok(billService.statusForBooking(bookingId));

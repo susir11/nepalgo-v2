@@ -7,13 +7,13 @@ import { Badge, Card, ErrorBox, Loading, PageHeader, Table, Td } from "../compon
 export default function Flags() {
   const booking = useGet<any[]>("/api/admin/feature-flags/booking");
   const payment = useGet<any[]>("/api/admin/feature-flags/payment");
-  const flags = [...(booking.data ?? []), ...(payment.data ?? []),
-    { key: "in_app_support_chat_enabled", enabled: false, owner: "support-service (Phase 8)", description: "Native in-app support chat instead of WhatsApp. Built in Phase 8; OFF by default." }];
+  const support = useGet<any[]>("/api/admin/feature-flags/support");
+  const flags = [...(booking.data ?? []), ...(payment.data ?? []), ...(support.data ?? [])];
   return (
     <>
       <PageHeader title="Feature flags" subtitle="Read-only. Changing a flag is a reviewed config change, not a click." />
       <Card>
-        <ErrorBox error={booking.error || payment.error} />
+        <ErrorBox error={booking.error || payment.error || support.error} />
         {booking.isLoading || payment.isLoading ? <Loading /> : (
           <Table head={["Flag", "State", "Owner", "What it does"]}>
             {flags.map((f) => (

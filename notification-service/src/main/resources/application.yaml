@@ -1,0 +1,53 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/nepalgo
+    username: notification_svc
+    password: notification_dev_pw
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    schemas: notification
+    default-schema: notification
+  mail:
+    # Dev: Mailpit (docker compose) captures everything at http://localhost:8025.
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+nepalgo:
+  jwt:
+    staff:
+      public-key-path: ${JWT_STAFF_PUBLIC_KEY_PATH:secrets/staff-public.pem}
+    customer:
+      public-key-path: ${JWT_CUSTOMER_PUBLIC_KEY_PATH:secrets/customer-public.pem}
+  internal:
+    api-key: ${INTERNAL_API_KEY:nepalgo-local-dev-internal-key}   # LOCAL-DEV fallback; Phase 9 removes it
+  notification:
+    mail-from: "NepalGo <no-reply@nepalgo.local>"
+    ops-email: ${OPS_ALERT_EMAIL:ops@nepalgo.local}               # where "receipt uploaded" alerts go
+    # Firebase service account for FCM. If missing/unreadable, push is disabled
+    # (deliveries marked SKIPPED) but in-app inbox + email keep working.
+    firebase-credentials-path: ${GOOGLE_APPLICATION_CREDENTIALS:secrets/firebase-service-account.json}
+    max-attempts: 6
+    poll-interval-ms: 10000

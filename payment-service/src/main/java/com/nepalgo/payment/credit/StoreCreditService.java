@@ -42,6 +42,7 @@ public class StoreCreditService {
     private final BillAmendmentRepository billAmendmentRepository;
     private final BookingClient bookingClient;
     private final AuditService auditService;
+    private final com.nepalgo.payment.client.NotificationPublisher notifications;
 
     // ================================================================ views
 
@@ -208,6 +209,8 @@ public class StoreCreditService {
                     c.setNote(note);
                     creditRepository.save(c);
                     auditService.log(null, "CREDIT_ISSUED", "STORE_CREDIT", c.getId(), c.getCode() + " $" + amountUsd + " for cancelled booking " + bookingId);
+                    notifications.publish("CREDIT_ISSUED", "CREDIT_ISSUED:" + c.getCode(), c.getCustomerId(), bookingId,
+                            java.util.Map.of("amountUsd", c.getAmountUsd(), "creditCode", c.getCode(), "expiresOn", c.getExpiresOn().toString()));
                     return c;
                 });
     }
@@ -240,6 +243,8 @@ public class StoreCreditService {
         c.setNote(note);
         creditRepository.save(c);
         auditService.log(adminId, "CREDIT_ISSUED_MANUALLY", "STORE_CREDIT", c.getId(), c.getCode() + " $" + c.getAmountUsd() + " customer " + customerId);
+        notifications.publish("CREDIT_ISSUED", "CREDIT_ISSUED:" + c.getCode(), c.getCustomerId(), null,
+                java.util.Map.of("amountUsd", c.getAmountUsd(), "creditCode", c.getCode(), "expiresOn", c.getExpiresOn().toString()));
         return CreditView.of(c);
     }
 

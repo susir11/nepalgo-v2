@@ -48,6 +48,14 @@ spring:
               uri: lb://legal-service
               predicates:
                 - Path=/api/legal/**,/api/content/**,/api/admin/legal/**,/api/admin/content/**
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**,/api/admin/notifications/**
+            - id: support-service
+              uri: lb://support-service
+              predicates:
+                - Path=/api/support/**,/api/support-status,/api/admin/support/**,/api/admin/feature-flags/support
             # NOTE: /internal/** is deliberately NOT routed. Service-to-service
             # endpoints are reachable only inside the network (Eureka), never
             # from the internet through the gateway: defence in depth on top of

@@ -6,6 +6,7 @@ import '../core/format.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
 import '../core/widgets.dart';
+import 'inbox.dart';
 
 typedef _Query = ({String q, String? type});
 
@@ -55,7 +56,10 @@ class _ExploreState extends ConsumerState<ExploreScreen> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               sliver: SliverList.list(children: [
-                Text(name == null ? 'Where to next?' : 'Namaste, $name', style: Theme.of(context).textTheme.displaySmall),
+                Row(children: [
+                  Expanded(child: Text(name == null ? 'Where to next?' : 'Namaste, $name', style: Theme.of(context).textTheme.displaySmall)),
+                  const InboxBell(),
+                ]),
                 const SizedBox(height: 14),
                 TextField(
                   controller: _search,
