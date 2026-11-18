@@ -7,7 +7,6 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 | Item | Why | What to build |
 |---|---|---|
 | **Sign in with Apple** (iOS) | If the iOS app offers Google/Facebook login, Apple requires Sign in with Apple too (Guideline 4.8). | Add when social login is enabled (FlutterFire config files needed). |
-| **Public privacy-policy URL** | Both stores need a public web URL, not an in-app screen. | Serve the current Privacy Policy as a public HTML page (e.g. `https://nepalgo.com/privacy`, rendered from `GET /api/legal/privacy/current`). |
 
 ## ⚠️ Before first build
 
@@ -55,7 +54,9 @@ No card data is collected (Payoneer). No advertising, no data sale. Data encrypt
 
 ## ✅ Already in place
 
-- **In-app account deletion** (Profile → Delete account, typed DELETE confirmation): open requests withdrawn, personal data erased from bookings, inbox/devices erased, Firebase login deleted, NepalGo ID retired; invoices kept. Google Play also wants a **web** deletion link: point it at a support form / e-mail until a web page exists.
+- **Public legal pages** served by legal-service through the gateway, always the current published version: `https://<api domain>/privacy` (store "Privacy Policy URL"), `/terms`, `/delete-account` (Google Play "account deletion web link"). No JavaScript, strict CSP, mobile-friendly, light/dark.
+
+- **In-app account deletion** (Profile → Delete account, typed DELETE confirmation): open requests withdrawn, personal data erased from bookings, inbox/devices erased, Firebase login deleted, NepalGo ID retired; invoices kept. Web deletion link for Google Play: `/delete-account`.
 
 - Terms + Privacy versioned, consent recorded per booking (legal-service).
 - Light / Dark / System appearance; accessible labels on nav and icon buttons; customer copy never shows raw status codes.

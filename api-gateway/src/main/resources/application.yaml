@@ -47,7 +47,7 @@ spring:
             - id: legal-service
               uri: lb://legal-service
               predicates:
-                - Path=/api/legal/**,/api/content/**,/api/admin/legal/**,/api/admin/content/**
+                - Path=/api/legal/**,/api/content/**,/api/admin/legal/**,/api/admin/content/**,/privacy,/terms,/delete-account
             - id: notification-service
               uri: lb://notification-service
               predicates:

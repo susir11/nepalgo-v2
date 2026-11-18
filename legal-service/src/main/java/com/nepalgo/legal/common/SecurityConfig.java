@@ -91,7 +91,7 @@ public class SecurityConfig {
     SecurityFilterChain publicContent(HttpSecurity http) throws Exception {
         stateless(http)
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers(HttpMethod.GET, "/api/legal/**", "/api/content/**", "/actuator/health/**", "/actuator/info").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/legal/**", "/api/content/**", "/privacy", "/terms", "/delete-account", "/actuator/health/**", "/actuator/info").permitAll()
                         .anyRequest().denyAll());   // default-deny: anything not listed above is closed
         return http.build();
     }

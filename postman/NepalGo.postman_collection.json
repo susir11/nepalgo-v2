@@ -3474,6 +3474,80 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Public legal pages (HTML, no auth, via gateway)",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "privacy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gatewayUrl}}/privacy"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 HTML', () => { pm.response.to.have.status(200); pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html'); });",
+                  "pm.test('strict CSP', () => pm.expect(pm.response.headers.get('Content-Security-Policy')).to.include(\"default-src 'none'\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "terms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gatewayUrl}}/terms"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 HTML', () => { pm.response.to.have.status(200); pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html'); });",
+                  "pm.test('strict CSP', () => pm.expect(pm.response.headers.get('Content-Security-Policy')).to.include(\"default-src 'none'\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "delete-account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{gatewayUrl}}/delete-account"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 HTML', () => { pm.response.to.have.status(200); pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html'); });",
+                  "pm.test('strict CSP', () => pm.expect(pm.response.headers.get('Content-Security-Policy')).to.include(\"default-src 'none'\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
