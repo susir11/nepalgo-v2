@@ -2504,6 +2504,956 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Admin - Customers & queue (OPS token, auto)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{opsToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Search customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers?q=susir&page=0&size=20"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json(); if (j.content.length) pm.environment.set('customerId', j.content[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer by NepalGo ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers/by-nepalgo-id/2303%203409"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Customer history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/history"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suspend customer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/suspend"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Fraud check\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reactivate customer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/reactivate"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Cleared\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Booking queue (urgency + filters)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/bookings?sort=urgency&status=&origin=&q=&size=20"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Dashboard stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/bookings/stats"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Booking timeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/timeline"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update internal notes",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/internal-notes"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"internalNotes\": \"Called hotel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feature flags: booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/feature-flags/booking"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feature flags: payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{paymentUrl}}/api/admin/feature-flags/payment"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feature flags: support",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/feature-flags/support"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login as OPS (no MFA enrolled): /admin/auth/login -> save opsToken.",
+              "if (isExpired(env('opsToken'))) {",
+              "  pm.sendRequest({",
+              "    url: env('authUrl') + '/api/v1/admin/auth/login',",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('opsEmail'), password: env('opsPassword') }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('OPS auto-login failed', err || res.text()); return; }",
+              "    const j = res.json();",
+              "    if (!j.tokens) { console.error('OPS account now requires MFA - auto-login cannot continue'); return; }",
+              "    pm.environment.set('opsToken', j.tokens.accessToken);",
+              "    pm.environment.set('opsRefreshToken', j.tokens.refreshToken);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth - SUPER_ADMIN MFA enrollment (no auth)",
+      "auth": {
+        "type": "noauth"
+      },
+      "description": "A SUPER_ADMIN without MFA gets mfaEnrollmentRequired=true + pendingToken from login, and NO access token.",
+      "item": [
+        {
+          "name": "Enroll: start (with pendingToken)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/start"
+            },
+            "description": "Returns the TOTP secret + otpauth:// link. Refused (409) if MFA is already enabled.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pendingToken\": \"{{pendingToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Enroll: confirm first code",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/confirm"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pendingToken\": \"{{pendingToken}}\",\n  \"code\": \"000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json(); if (j.accessToken) pm.environment.set('adminToken', j.accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications - Customer (auto token)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{customerToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "My inbox",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificationUrl}}/api/notifications"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json(); if (j.content.length) pm.environment.set('notificationId', j.content[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark read",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{notificationUrl}}/api/notifications/{{notificationId}}/read"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register device (FCM token)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{notificationUrl}}/api/notifications/devices"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"fcm-token-from-device\",\n  \"platform\": \"ANDROID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login: Firebase sign-in -> /firebase/exchange -> save customerToken.",
+              "if (isExpired(env('customerToken'))) {",
+              "  pm.sendRequest({",
+              "    url: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + env('firebaseApiKey'),",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('customerEmail'), password: env('customerPassword'), returnSecureToken: true }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('Customer auto-login: Firebase sign-in failed', err || res.text()); return; }",
+              "    pm.sendRequest({",
+              "      url: env('authUrl') + '/api/v1/auth/firebase/exchange',",
+              "      method: 'POST', header: json,",
+              "      body: { mode: 'raw', raw: JSON.stringify({ idToken: res.json().idToken }) }",
+              "    }, (err2, res2) => {",
+              "      if (err2 || res2.code !== 200) { console.error('Customer auto-login: exchange failed', err2 || res2.text()); return; }",
+              "      const j = res2.json();",
+              "      pm.environment.set('customerToken', j.accessToken);",
+              "      pm.environment.set('customerRefreshToken', j.refreshToken);",
+              "    });",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications - Admin (SUPER_ADMIN or OPS)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{adminToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Admin alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificationUrl}}/api/admin/notifications"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delivery status of a notification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificationUrl}}/api/admin/notifications/{{notificationId}}/deliveries"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support - Customer (flag in_app_support_chat_enabled; 404 while OFF)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{customerToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Support status (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/support-status"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/support/threads"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Open thread",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/support/threads"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Lukla flight delayed\",\n  \"message\": \"What now?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json(); if (j.thread) pm.environment.set('threadId', j.thread.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reply",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/support/threads/{{threadId}}/messages"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"We are 2 people.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request callback",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/support/callbacks"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+977 980-0000000\",\n  \"preferredTime\": \"Weekday evenings NPT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login: Firebase sign-in -> /firebase/exchange -> save customerToken.",
+              "if (isExpired(env('customerToken'))) {",
+              "  pm.sendRequest({",
+              "    url: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + env('firebaseApiKey'),",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('customerEmail'), password: env('customerPassword'), returnSecureToken: true }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('Customer auto-login: Firebase sign-in failed', err || res.text()); return; }",
+              "    pm.sendRequest({",
+              "      url: env('authUrl') + '/api/v1/auth/firebase/exchange',",
+              "      method: 'POST', header: json,",
+              "      body: { mode: 'raw', raw: JSON.stringify({ idToken: res.json().idToken }) }",
+              "    }, (err2, res2) => {",
+              "      if (err2 || res2.code !== 200) { console.error('Customer auto-login: exchange failed', err2 || res2.text()); return; }",
+              "      const j = res2.json();",
+              "      pm.environment.set('customerToken', j.accessToken);",
+              "      pm.environment.set('customerRefreshToken', j.refreshToken);",
+              "    });",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Support - Admin inbox (flag ON only)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{adminToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Open threads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/threads?status=OPEN"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thread detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pick up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/pick-up"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reply",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/messages"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"We'll rebook you on the next flight.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Close",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/close"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pending callbacks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{supportUrl}}/api/admin/support/callbacks?status=PENDING"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
@@ -2520,6 +3470,16 @@
     {
       "key": "legalUrl",
       "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "notificationUrl",
+      "value": "http://localhost:8086",
+      "type": "string"
+    },
+    {
+      "key": "supportUrl",
+      "value": "http://localhost:8087",
       "type": "string"
     }
   ]

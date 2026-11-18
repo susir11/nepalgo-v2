@@ -29,6 +29,22 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: refresh,
+    // Unknown deep link / stale notification link: a friendly page, never go_router's debug screen.
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.explore_off_rounded, size: 48),
+            const SizedBox(height: 12),
+            const Text("This page doesn't exist (anymore).", textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            FilledButton(onPressed: () => context.go('/explore'), child: const Text('Back to Explore')),
+          ]),
+        ),
+      ),
+    ),
     redirect: (context, state) {
       final auth = ref.read(authProvider).status;
       final seen = ref.read(onboardingSeenProvider);

@@ -1,6 +1,7 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
 import { useGet } from "../lib/hooks";
+import ErrorBoundary from "./ErrorBoundary";
 
 type Item = { to: string; label: string; superOnly?: boolean };
 const NAV: { group: string; items: Item[] }[] = [
@@ -31,6 +32,7 @@ const NAV: { group: string; items: Item[] }[] = [
 export default function Layout() {
   const { session, logout } = useAuth();
   const nav = useNavigate();
+  const location = useLocation();   // new boundary per page: one crash doesn't stick across navigation
   const isSuper = session?.role === "SUPER_ADMIN";
   const alerts = useGet<any>("/api/admin/notifications");
   const unread = alerts.data?.unread ?? 0;
@@ -62,7 +64,7 @@ export default function Layout() {
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-5 py-6 md:px-8">
-        <Outlet />
+        <ErrorBoundary key={location.pathname}><Outlet /></ErrorBoundary>
       </main>
     </div>
   );
