@@ -13,3 +13,7 @@ admin-frontend/.vite/
 
 # local service logs (start-extra-services.ps1)
 /logs/
+
+# Personal working notes for Claude Code (kept local, not published)
+CLAUDE.md
+CLAUDE.local.md
