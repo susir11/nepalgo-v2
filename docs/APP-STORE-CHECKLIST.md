@@ -17,7 +17,7 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 - [ ] Versioning: `pubspec.yaml` `version: 1.0.0+1` — bump the build number for every upload.
 - [ ] **Release signing**: Gradle is wired to `android/key.properties` (gitignored; falls back to the debug key when absent, which Play rejects). Create the upload key once and keep the `.jks` + passwords in a password manager, outside the repo:
   `keytool -genkey -v -keystore C:/keys/nepalgo-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`
-  then `android/key.properties`: `storePassword=…`, `keyPassword=…`, `keyAlias=upload`, `storeFile=C:/keys/nepalgo-upload.jks`; build with `flutter build appbundle`. Enable Play App Signing. iOS: distribution certificate + provisioning profile (needs a Mac).
+  then `android/key.properties`: `storePassword=…`, `keyPassword=…`, `keyAlias=upload`, `storeFile=C:/keys/nepalgo-upload.jks`; build with `flutter build appbundle --release --dart-define-from-file=dart_defines.json`. Verified 2026-11-19: the release bundle builds (54 MB .aab; Play serves smaller per-device APKs) and, without `key.properties`, is signed `CN=Android Debug` as intended — check `jarsigner -verify -verbose -certs` shows YOUR certificate before uploading. Enable Play App Signing. iOS: distribution certificate + provisioning profile (needs a Mac).
 - [ ] `API_BASE` and `FIREBASE_API_KEY` passed with `--dart-define` for the production build; production Firebase project.
 - [ ] Android `targetSdk` = current Play requirement; iOS minimum version decided.
 - [ ] FlutterFire: `google-services.json` (Android) + `GoogleService-Info.plist` (iOS) for push (FCM/APNs key uploaded to Firebase) and social login.
