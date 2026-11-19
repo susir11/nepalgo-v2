@@ -3548,6 +3548,317 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Reviews - Public (no auth)",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "Published reviews of a destination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/reviews/destinations/1?page=0&size=10"
+            },
+            "description": "Average + 5..1 histogram + newest published reviews. Never contains customer or booking ids."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json();",
+                  "pm.test('summary has 5 buckets', () => pm.expect(Object.keys(j.summary.ratingCounts)).to.have.length(5));",
+                  "pm.test('no ids leak', () => j.items.forEach(i => { pm.expect(i).to.not.have.property('customerId'); pm.expect(i).to.not.have.property('bookingId'); }));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reviews - Customer (auto token)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{customerToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "description": "Only a CONFIRMED booking whose last trip day has passed can be reviewed. Any edit returns the review to PENDING.",
+      "item": [
+        {
+          "name": "Eligibility + my review",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/review"
+            },
+            "description": "eligible=false with ineligibleReason TRIP_NOT_CONFIRMED / TRIP_NOT_FINISHED, eligibleFrom = last trip day."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Write / edit review",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/review"
+            },
+            "description": "409 TRIP_NOT_FINISHED before the trip ends. Rating 1-5, body 10-2000 chars, title <= 80.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"title\": \"Great trek\",\n  \"body\": \"Guide was brilliant and the teahouses were warm.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 or 409 (trip not finished)', () => pm.expect(pm.response.code).to.be.oneOf([200, 409]));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login: Firebase sign-in -> /firebase/exchange -> save customerToken.",
+              "if (isExpired(env('customerToken'))) {",
+              "  pm.sendRequest({",
+              "    url: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + env('firebaseApiKey'),",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('customerEmail'), password: env('customerPassword'), returnSecureToken: true }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('Customer auto-login: Firebase sign-in failed', err || res.text()); return; }",
+              "    pm.sendRequest({",
+              "      url: env('authUrl') + '/api/v1/auth/firebase/exchange',",
+              "      method: 'POST', header: json,",
+              "      body: { mode: 'raw', raw: JSON.stringify({ idToken: res.json().idToken }) }",
+              "    }, (err2, res2) => {",
+              "      if (err2 || res2.code !== 200) { console.error('Customer auto-login: exchange failed', err2 || res2.text()); return; }",
+              "      const j = res2.json();",
+              "      pm.environment.set('customerToken', j.accessToken);",
+              "      pm.environment.set('customerRefreshToken', j.refreshToken);",
+              "    });",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews - Moderation (OPS token, auto)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{opsToken}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Moderation queue (PENDING, oldest first)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/reviews?status=PENDING&page=0&size=20"
+            },
+            "description": "status = PENDING | PUBLISHED | REJECTED | HIDDEN | ALL. pendingCount feeds the nav badge."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));",
+                  "const j = pm.response.json(); if (j.items.length) pm.environment.set('reviewId', j.items[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publish",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
+            },
+            "description": "From PENDING or HIDDEN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"PUBLISH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject (note shown to traveller)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
+            },
+            "description": "From PENDING; note required.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"REJECT\",\n  \"note\": \"Please remove the phone number.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Take down (internal note)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
+            },
+            "description": "From PUBLISHED; note required, never shown to the customer.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"HIDE\",\n  \"note\": \"Complaint upheld\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Returns true if the JWT is missing, unreadable, or expires within 60 seconds.",
+              "function isExpired(token) {",
+              "  if (!token) return true;",
+              "  try {",
+              "    let p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');",
+              "    while (p.length % 4) p += '=';",
+              "    const payload = JSON.parse(CryptoJS.enc.Base64.parse(p).toString(CryptoJS.enc.Utf8));",
+              "    return (payload.exp * 1000) < (Date.now() + 60000);",
+              "  } catch (e) { return true; }",
+              "}",
+              "const env = (k) => pm.environment.get(k);",
+              "const json = { 'Content-Type': 'application/json' };",
+              "// Auto-login as OPS (no MFA enrolled): /admin/auth/login -> save opsToken.",
+              "if (isExpired(env('opsToken'))) {",
+              "  pm.sendRequest({",
+              "    url: env('authUrl') + '/api/v1/admin/auth/login',",
+              "    method: 'POST', header: json,",
+              "    body: { mode: 'raw', raw: JSON.stringify({ email: env('opsEmail'), password: env('opsPassword') }) }",
+              "  }, (err, res) => {",
+              "    if (err || res.code !== 200) { console.error('OPS auto-login failed', err || res.text()); return; }",
+              "    const j = res.json();",
+              "    if (!j.tokens) { console.error('OPS account now requires MFA - auto-login cannot continue'); return; }",
+              "    pm.environment.set('opsToken', j.tokens.accessToken);",
+              "    pm.environment.set('opsRefreshToken', j.tokens.refreshToken);",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
