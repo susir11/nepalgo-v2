@@ -14,6 +14,8 @@ type Review = {
 type Page = { items: Review[]; page: number; totalPages: number; totalItems: number; pendingCount: number };
 
 const TABS = ["PENDING", "PUBLISHED", "HIDDEN", "REJECTED", "ALL"] as const;
+// "2026-10" -> "Oct 2026" (UTC so a browser in UTC-x never shows September).
+const month = (ym: string) => new Date(`${ym}-01T00:00:00Z`).toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
 const stars = (n: number) => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
 
 // Review moderation (Apple 1.2: user-generated content must be filtered).
@@ -72,7 +74,7 @@ export default function Reviews() {
                   <span className="text-lg tracking-wider text-secondary" aria-label={`${r.rating} of 5 stars`}>{stars(r.rating)}</span>
                   <StatusBadge status={r.status} />
                   <span className="font-semibold">{r.destinationName ?? `Destination #${r.destinationId}`}</span>
-                  <span className="text-muted">by {r.authorName} · travelled {r.tripMonth} · submitted {dateTime(r.createdAt)}</span>
+                  <span className="text-muted">by {r.authorName} · travelled {month(r.tripMonth)} · submitted {dateTime(r.createdAt)}</span>
                 </div>
                 {r.title && <div className="mt-2 font-semibold">{r.title}</div>}
                 <p className="mt-1 whitespace-pre-wrap text-sm">{r.body}</p>
