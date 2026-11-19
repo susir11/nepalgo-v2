@@ -13,9 +13,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{firebaseApiKey}}"
-            },
+            "url": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{firebaseApiKey}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"returnSecureToken\": true\n}",
@@ -46,9 +44,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/auth/firebase/exchange"
-            },
+            "url": "{{authUrl}}/api/v1/auth/firebase/exchange",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"idToken\": \"{{firebaseIdToken}}\"\n}",
@@ -81,9 +77,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/login"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/login",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{opsEmail}}\",\n  \"password\": \"{{opsPassword}}\"\n}",
@@ -115,9 +109,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/login"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/login",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
@@ -150,9 +142,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/verify"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/mfa/verify",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"pendingToken\": \"{{pendingToken}}\",\n  \"code\": \"000000\"\n}",
@@ -191,9 +181,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/auth/refresh"
-            },
+            "url": "{{authUrl}}/api/v1/auth/refresh",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{customerRefreshToken}}\"\n}",
@@ -225,9 +213,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/auth/me"
-            }
+            "url": "{{authUrl}}/api/v1/auth/me"
           }
         },
         {
@@ -235,9 +221,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/auth/logout"
-            },
+            "url": "{{authUrl}}/api/v1/auth/logout",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{customerRefreshToken}}\"\n}",
@@ -257,9 +241,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/auth/me"
-            },
+            "url": "{{authUrl}}/api/v1/auth/me",
             "description": "Spec 15.2. 204 deleted (also on retry), 409 ACCOUNT_DELETION_BLOCKED while a payment is being verified, 503 = retry. Use a THROWAWAY customer.",
             "body": {
               "mode": "raw",
@@ -334,9 +316,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/refresh"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/refresh",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}",
@@ -368,9 +348,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/logout"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/logout",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}",
@@ -390,9 +368,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/start"
-            }
+            "url": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/start"
           }
         },
         {
@@ -400,9 +376,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/confirm"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/confirm",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"code\": \"000000\"\n}",
@@ -419,9 +393,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/staff"
-            },
+            "url": "{{authUrl}}/api/v1/admin/staff",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"ops2@nepalgo.local\",\n  \"temporaryPassword\": \"TempPass123!\",\n  \"role\": \"OPS\"\n}",
@@ -461,6 +433,15 @@
                   "key": "size",
                   "value": "20"
                 }
+              ],
+              "host": [
+                "{{authUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "staff"
               ]
             }
           }
@@ -470,9 +451,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/deactivate"
-            }
+            "url": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/deactivate"
           }
         },
         {
@@ -480,9 +459,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/role"
-            },
+            "url": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/role",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"role\": \"OPS\"\n}",
@@ -499,9 +476,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/reset-mfa"
-            }
+            "url": "{{authUrl}}/api/v1/admin/staff/{{staffId}}/reset-mfa"
           }
         }
       ],
@@ -535,9 +510,29 @@
                   "key": "size",
                   "value": "20"
                 }
+              ],
+              "host": [
+                "{{catalogUrl}}"
+              ],
+              "path": [
+                "api",
+                "destinations"
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('page shape', () => { pm.expect(j.content).to.be.an('array'); pm.expect(j).to.have.property('totalElements'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Search / filter",
@@ -581,30 +576,70 @@
                   "value": "14",
                   "disabled": true
                 }
+              ],
+              "host": [
+                "{{catalogUrl}}"
+              ],
+              "path": [
+                "api",
+                "destinations"
               ]
             },
             "description": "Tick/untick the query params to combine filters."
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('every hit matches the search term', () => j.content.forEach(d => pm.expect((d.name + ' ' + (d.description || '')).toLowerCase()).to.include('everest')));"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get destination",
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/destinations/{{destinationId}}"
+            "url": "{{catalogUrl}}/api/destinations/{{destinationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test('has DEFAULT itinerary with numbered days', () => { pm.expect(j.defaultItinerary.tier).to.eql('DEFAULT'); j.defaultItinerary.days.forEach((d, i) => pm.expect(d.dayNumber).to.eql(i + 1)); });"
+                ]
+              }
             }
-          }
+          ]
         },
         {
           "name": "Weather",
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/destinations/{{destinationId}}/weather"
+            "url": "{{catalogUrl}}/api/destinations/{{destinationId}}/weather"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 or 503 (weather provider down is allowed, never 500)', () => pm.expect(pm.response.code).to.be.oneOf([200, 503]));"
+                ]
+              }
             }
-          }
+          ]
         }
       ],
       "auth": {
@@ -619,9 +654,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations"
-            },
+            "url": "{{catalogUrl}}/api/admin/destinations",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Everest Base Camp Trek\",\n  \"region\": \"Khumbu\",\n  \"type\": \"Trek\",\n  \"description\": \"Classic EBC trek through Sherpa country.\",\n  \"bestSeason\": \"Mar-May, Sep-Nov\",\n  \"basePriceUsd\": 1200.0,\n  \"permitNotes\": \"Sagarmatha National Park permit required.\",\n  \"latitude\": 27.9881,\n  \"longitude\": 86.925\n}",
@@ -650,9 +683,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}"
-            },
+            "url": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Everest Base Camp Trek\",\n  \"region\": \"Khumbu\",\n  \"type\": \"Trek\",\n  \"description\": \"Classic EBC trek through Sherpa country.\",\n  \"bestSeason\": \"Mar-May, Sep-Nov\",\n  \"basePriceUsd\": 1200.0,\n  \"permitNotes\": \"Sagarmatha National Park permit required.\",\n  \"latitude\": 27.9881,\n  \"longitude\": 86.925\n}",
@@ -669,9 +700,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}"
-            }
+            "url": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}"
           }
         },
         {
@@ -679,9 +708,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/itinerary-versions"
-            },
+            "url": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/itinerary-versions",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"tier\": \"DEFAULT\",\n  \"days\": [\n    {\n      \"dayNumber\": 1,\n      \"narrative\": \"Fly to Lukla, trek to Phakding.\"\n    },\n    {\n      \"dayNumber\": 2,\n      \"narrative\": \"Trek to Namche Bazaar.\",\n      \"hotelName\": \"Namche Lodge\",\n      \"hotelLat\": 27.8069,\n      \"hotelLng\": 86.7142\n    }\n  ]\n}",
@@ -710,9 +737,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/images"
-            },
+            "url": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/images",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -742,9 +767,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {
-              "raw": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/images/{{imageId}}"
-            }
+            "url": "{{catalogUrl}}/api/admin/destinations/{{destinationId}}/images/{{imageId}}"
           }
         }
       ],
@@ -803,9 +826,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings"
-            },
+            "url": "{{bookingUrl}}/api/bookings",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"destinationId\": \"{{destinationId}}\",\n  \"itineraryVersionId\": \"{{itineraryVersionId}}\",\n  \"partySize\": 2,\n  \"arrivalDate\": \"{{arrivalDate}}\",\n  \"guideRequested\": true,\n  \"porterRequested\": false,\n  \"specialRequestText\": \"Celebrating an anniversary\"\n}",
@@ -845,6 +866,13 @@
                   "key": "size",
                   "value": "20"
                 }
+              ],
+              "host": [
+                "{{bookingUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
               ]
             }
           }
@@ -854,9 +882,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}"
-            }
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}"
           }
         },
         {
@@ -864,9 +890,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/identity"
-            },
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/identity",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"legalName\": \"Susir Test\",\n  \"passportNumber\": \"PA1234567\",\n  \"email\": \"susir.test@gmail.com\"\n}",
@@ -883,9 +907,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/payment-receipt"
-            },
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/payment-receipt",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -909,9 +931,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/withdraw"
-            }
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/withdraw"
           }
         },
         {
@@ -919,9 +939,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/cancel"
-            }
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/cancel"
           }
         },
         {
@@ -929,9 +947,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/documents"
-            },
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/documents",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -1027,6 +1043,14 @@
                   "value": "1",
                   "disabled": true
                 }
+              ],
+              "host": [
+                "{{bookingUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings"
               ]
             }
           }
@@ -1036,9 +1060,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}"
           }
         },
         {
@@ -1046,9 +1068,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/approve"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/approve"
           }
         },
         {
@@ -1056,9 +1076,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/reject"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/reject",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"rejectionReason\": \"Dates unavailable, please choose another window\"\n}",
@@ -1075,9 +1093,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/manual"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/manual",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"customerId\": 1,\n  \"destinationId\": \"{{destinationId}}\",\n  \"partySize\": 4,\n  \"arrivalDate\": \"{{arrivalDate}}\",\n  \"guideRequested\": false,\n  \"porterRequested\": true,\n  \"internalNotes\": \"Phone booking, customer called in\",\n  \"customItinerary\": [\n    {\n      \"narrative\": \"Arrive Kathmandu, private transfer, briefing dinner.\",\n      \"hotelName\": \"Dwarika's\",\n      \"hotelLat\": 27.7096,\n      \"hotelLng\": 85.3315\n    },\n    {\n      \"narrative\": \"Flight to Pokhara, sunset boat on Phewa Lake.\"\n    },\n    {\n      \"narrative\": \"Sunrise at Sarangkot, return flight.\"\n    }\n  ]\n}",
@@ -1107,9 +1123,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/verify-payment"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/verify-payment"
           }
         },
         {
@@ -1117,9 +1131,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/reject-payment"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/reject-payment",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"rejectionReason\": \"Receipt code does not match\"\n}",
@@ -1136,9 +1148,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/force-majeure-cancel"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/force-majeure-cancel",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"Flights cancelled due to weather\"\n}",
@@ -1217,9 +1227,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/billing-settings"
-            }
+            "url": "{{paymentUrl}}/api/admin/billing-settings"
           },
           "event": [
             {
@@ -1238,9 +1246,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/billing-settings"
-            },
+            "url": "{{paymentUrl}}/api/admin/billing-settings",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"vatRegistered\": false,\n  \"vatPercent\": 13.0,\n  \"serviceChargePercent\": 10.0,\n  \"sellerLegalName\": \"NepalGo Travels Pvt. Ltd. (dev)\",\n  \"sellerPanVatNumber\": \"000000000\",\n  \"sellerAddress\": \"Thamel, Kathmandu, Nepal\"\n}",
@@ -1268,9 +1274,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/fx-rates"
-            },
+            "url": "{{paymentUrl}}/api/admin/fx-rates",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"currencyPair\": \"USD/NPR\",\n  \"rate\": 137.25\n}",
@@ -1299,9 +1303,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/fx-rates/{{fxRateId}}/approve"
-            }
+            "url": "{{paymentUrl}}/api/admin/fx-rates/{{fxRateId}}/approve"
           },
           "event": [
             {
@@ -1321,9 +1323,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/fx-rates/current?pair=USD%2FNPR"
-            }
+            "url": "{{paymentUrl}}/api/admin/fx-rates/current?pair=USD%2FNPR"
           },
           "event": [
             {
@@ -1342,9 +1342,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/fx-rates?pair=USD%2FNPR"
-            }
+            "url": "{{paymentUrl}}/api/admin/fx-rates?pair=USD%2FNPR"
           },
           "event": [
             {
@@ -1379,9 +1377,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills"
-            },
+            "url": "{{paymentUrl}}/api/admin/bills",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"payoneerLink\": \"https://link.payoneer.com/Token?t=REPLACE\",\n  \"lineItems\": [\n    {\n      \"description\": \"Kathmandu hotel, 2 nights\",\n      \"category\": \"ACCOMMODATION\",\n      \"itineraryDay\": 1,\n      \"quantity\": 2,\n      \"unitPriceNpr\": 5000\n    },\n    {\n      \"description\": \"Private car Kathmandu to Lukla airport\",\n      \"category\": \"TRANSPORT\",\n      \"itineraryDay\": 2,\n      \"quantity\": 1,\n      \"unitPriceNpr\": 12500\n    },\n    {\n      \"description\": \"Licensed trekking guide\",\n      \"category\": \"GUIDE\",\n      \"quantity\": 3,\n      \"unitPriceNpr\": 2500\n    }\n  ]\n}",
@@ -1410,9 +1406,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/{{billId}}"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills/{{billId}}"
           },
           "event": [
             {
@@ -1431,9 +1425,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills?bookingId={{bookingId}}"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills?bookingId={{bookingId}}"
           },
           "event": [
             {
@@ -1452,9 +1444,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/{{billId}}"
-            },
+            "url": "{{paymentUrl}}/api/admin/bills/{{billId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"payoneerLink\": \"https://link.payoneer.com/Token?t=REPLACE\",\n  \"lineItems\": [\n    {\n      \"description\": \"Kathmandu hotel, 2 nights\",\n      \"category\": \"ACCOMMODATION\",\n      \"itineraryDay\": 1,\n      \"quantity\": 2,\n      \"unitPriceNpr\": 5000\n    },\n    {\n      \"description\": \"Private car Kathmandu to Lukla airport\",\n      \"category\": \"TRANSPORT\",\n      \"itineraryDay\": 2,\n      \"quantity\": 1,\n      \"unitPriceNpr\": 12500\n    },\n    {\n      \"description\": \"Licensed trekking guide\",\n      \"category\": \"GUIDE\",\n      \"quantity\": 3,\n      \"unitPriceNpr\": 2500\n    }\n  ],\n  \"reason\": \"only needed when the bill is LOCKED\"\n}",
@@ -1483,9 +1473,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/{{billId}}/credits/{{creditId}}/accept"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills/{{billId}}/credits/{{creditId}}/accept"
           },
           "event": [
             {
@@ -1504,9 +1492,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/{{billId}}/credits/{{creditId}}/reject"
-            },
+            "url": "{{paymentUrl}}/api/admin/bills/{{billId}}/credits/{{creditId}}/reject",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"Credit expired before the trip\"\n}",
@@ -1534,9 +1520,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/timeline?bookingId={{bookingId}}"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills/timeline?bookingId={{bookingId}}"
           },
           "event": [
             {
@@ -1555,9 +1539,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/{{billId}}/pdf"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills/{{billId}}/pdf"
           },
           "event": [
             {
@@ -1577,9 +1559,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/bills/export?from=2026-01-01&to=2026-12-31"
-            }
+            "url": "{{paymentUrl}}/api/admin/bills/export?from=2026-01-01&to=2026-12-31"
           },
           "event": [
             {
@@ -1598,9 +1578,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/receipts?bookingId={{bookingId}}"
-            }
+            "url": "{{paymentUrl}}/api/admin/receipts?bookingId={{bookingId}}"
           },
           "event": [
             {
@@ -1619,9 +1597,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/issue-bill"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/issue-bill",
             "description": "Only for ops-created bookings (already AWAITING_PAYMENT). Self-served bookings use Approve."
           },
           "event": [
@@ -1693,9 +1669,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/store-credits?page=0&size=20"
-            }
+            "url": "{{paymentUrl}}/api/admin/store-credits?page=0&size=20"
           },
           "event": [
             {
@@ -1714,9 +1688,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/store-credits"
-            },
+            "url": "{{paymentUrl}}/api/admin/store-credits",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"customerId\": 1,\n  \"amountUsd\": 45,\n  \"note\": \"Goodwill after delayed pickup\"\n}",
@@ -1745,9 +1717,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}"
-            }
+            "url": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}"
           },
           "event": [
             {
@@ -1766,9 +1736,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}"
-            },
+            "url": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amountUsd\": 50,\n  \"expiresOn\": \"2027-12-31\"\n}",
@@ -1796,9 +1764,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}/void"
-            },
+            "url": "{{paymentUrl}}/api/admin/store-credits/{{creditId}}/void",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"Issued in error\"\n}",
@@ -1826,9 +1792,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/refund-requests?status=PENDING"
-            }
+            "url": "{{paymentUrl}}/api/admin/refund-requests?status=PENDING"
           },
           "event": [
             {
@@ -1848,9 +1812,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/refund-requests/{{refundId}}/complete"
-            },
+            "url": "{{paymentUrl}}/api/admin/refund-requests/{{refundId}}/complete",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"payoutReference\": \"PAYONEER-TXN-REF\"\n}",
@@ -1894,9 +1856,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/bills/booking/{{bookingId}}"
-            }
+            "url": "{{paymentUrl}}/api/bills/booking/{{bookingId}}"
           },
           "event": [
             {
@@ -1915,9 +1875,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/bills/booking/{{bookingId}}/pdf"
-            }
+            "url": "{{paymentUrl}}/api/bills/booking/{{bookingId}}/pdf"
           },
           "event": [
             {
@@ -1936,9 +1894,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/store-credits"
-            }
+            "url": "{{paymentUrl}}/api/store-credits"
           },
           "event": [
             {
@@ -1957,9 +1913,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/store-credits/apply"
-            },
+            "url": "{{paymentUrl}}/api/store-credits/apply",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"codes\": [\n    \"{{creditCode}}\"\n  ]\n}",
@@ -2037,9 +1991,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/terms/current"
-            }
+            "url": "{{legalUrl}}/api/legal/terms/current"
           },
           "event": [
             {
@@ -2058,9 +2010,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/privacy/current"
-            }
+            "url": "{{legalUrl}}/api/legal/privacy/current"
           },
           "event": [
             {
@@ -2079,9 +2029,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/policy-review"
-            }
+            "url": "{{legalUrl}}/api/legal/policy-review"
           },
           "event": [
             {
@@ -2101,9 +2049,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/documents/{{termsDocumentId}}"
-            }
+            "url": "{{legalUrl}}/api/legal/documents/{{termsDocumentId}}"
           },
           "event": [
             {
@@ -2122,9 +2068,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/content/onboarding"
-            }
+            "url": "{{legalUrl}}/api/content/onboarding"
           },
           "event": [
             {
@@ -2143,9 +2087,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/content/company-profile"
-            }
+            "url": "{{legalUrl}}/api/content/company-profile"
           },
           "event": [
             {
@@ -2180,9 +2122,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/consents"
-            },
+            "url": "{{legalUrl}}/api/legal/consents",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"termsDocumentId\": \"{{termsDocumentId}}\",\n  \"cancellationMatrix\": {\n    \"expandedAt\": \"{{c_ex}}\",\n    \"checkedAt\": \"{{c_ck}}\"\n  },\n  \"forceMajeureWeather\": {\n    \"expandedAt\": \"{{f_ex}}\",\n    \"checkedAt\": \"{{f_ck}}\"\n  },\n  \"identityLiability\": {\n    \"expandedAt\": \"{{i_ex}}\",\n    \"checkedAt\": \"{{i_ck}}\"\n  }\n}",
@@ -2222,9 +2162,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/legal/consents?bookingId={{bookingId}}"
-            }
+            "url": "{{legalUrl}}/api/legal/consents?bookingId={{bookingId}}"
           },
           "event": [
             {
@@ -2301,9 +2239,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/terms/versions"
-            }
+            "url": "{{legalUrl}}/api/admin/legal/terms/versions"
           },
           "event": [
             {
@@ -2322,9 +2258,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/terms/drafts"
-            },
+            "url": "{{legalUrl}}/api/admin/legal/terms/drafts",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"changeSummary\": \"Fill in company legal name and contact\"\n}",
@@ -2353,9 +2287,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
-            }
+            "url": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
           },
           "event": [
             {
@@ -2374,9 +2306,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
-            },
+            "url": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"changeSummary\": \"Edited draft\"\n}",
@@ -2404,9 +2334,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}/publish"
-            }
+            "url": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}/publish"
           },
           "event": [
             {
@@ -2425,9 +2353,7 @@
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
-            }
+            "url": "{{legalUrl}}/api/admin/legal/documents/{{legalDraftId}}"
           }
         },
         {
@@ -2435,9 +2361,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/legal/consents?bookingId={{bookingId}}"
-            }
+            "url": "{{legalUrl}}/api/admin/legal/consents?bookingId={{bookingId}}"
           },
           "event": [
             {
@@ -2456,9 +2380,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/content/onboarding/versions"
-            }
+            "url": "{{legalUrl}}/api/admin/content/onboarding/versions"
           },
           "event": [
             {
@@ -2477,9 +2399,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/content/company-profile/drafts"
-            },
+            "url": "{{legalUrl}}/api/admin/content/company-profile/drafts",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"payload\": {\n    \"legalName\": \"NepalGo Travels Pvt. Ltd.\",\n    \"registrationNumber\": \"123456/080/081\",\n    \"registeredAddress\": \"Thamel, Kathmandu, Nepal\",\n    \"supportEmail\": \"support@example.com\",\n    \"supportWhatsApp\": \"+977-98XXXXXXXX\",\n    \"website\": \"https://example.com\",\n    \"about\": \"Kathmandu-based team that hand-builds trips across Nepal.\"\n  },\n  \"changeSummary\": \"Real company details\"\n}",
@@ -2508,9 +2428,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{legalUrl}}/api/admin/content/versions/{{contentDraftId}}/publish"
-            }
+            "url": "{{legalUrl}}/api/admin/content/versions/{{contentDraftId}}/publish"
           },
           "event": [
             {
@@ -2544,9 +2462,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers?q=susir&page=0&size=20"
-            }
+            "url": "{{authUrl}}/api/v1/admin/customers?q=susir&page=0&size=20"
           },
           "event": [
             {
@@ -2566,9 +2482,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers/by-nepalgo-id/2303%203409"
-            }
+            "url": "{{authUrl}}/api/v1/admin/customers/by-nepalgo-id/2303%203409"
           },
           "event": [
             {
@@ -2587,9 +2501,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}"
-            }
+            "url": "{{authUrl}}/api/v1/admin/customers/{{customerId}}"
           },
           "event": [
             {
@@ -2608,9 +2520,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/history"
-            }
+            "url": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/history"
           },
           "event": [
             {
@@ -2629,9 +2539,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/suspend"
-            },
+            "url": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/suspend",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"Fraud check\"\n}",
@@ -2659,9 +2567,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/reactivate"
-            },
+            "url": "{{authUrl}}/api/v1/admin/customers/{{customerId}}/reactivate",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"reason\": \"Cleared\"\n}",
@@ -2689,9 +2595,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings?sort=urgency&status=&origin=&q=&size=20"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings?sort=urgency&status=&origin=&q=&size=20"
           },
           "event": [
             {
@@ -2710,9 +2614,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/stats"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings/stats"
           },
           "event": [
             {
@@ -2731,9 +2633,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/timeline"
-            }
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/timeline"
           },
           "event": [
             {
@@ -2752,9 +2652,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/internal-notes"
-            },
+            "url": "{{bookingUrl}}/api/admin/bookings/{{bookingId}}/internal-notes",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"internalNotes\": \"Called hotel\"\n}",
@@ -2782,9 +2680,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/feature-flags/booking"
-            }
+            "url": "{{bookingUrl}}/api/admin/feature-flags/booking"
           },
           "event": [
             {
@@ -2803,9 +2699,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{paymentUrl}}/api/admin/feature-flags/payment"
-            }
+            "url": "{{paymentUrl}}/api/admin/feature-flags/payment"
           },
           "event": [
             {
@@ -2824,9 +2718,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/feature-flags/support"
-            }
+            "url": "{{supportUrl}}/api/admin/feature-flags/support"
           },
           "event": [
             {
@@ -2890,9 +2782,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/start"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/start",
             "description": "Returns the TOTP secret + otpauth:// link. Refused (409) if MFA is already enabled.",
             "body": {
               "mode": "raw",
@@ -2921,9 +2811,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/confirm"
-            },
+            "url": "{{authUrl}}/api/v1/admin/auth/mfa/enroll/confirm",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"pendingToken\": \"{{pendingToken}}\",\n  \"code\": \"000000\"\n}",
@@ -2967,9 +2855,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{notificationUrl}}/api/notifications"
-            }
+            "url": "{{notificationUrl}}/api/notifications"
           },
           "event": [
             {
@@ -2989,9 +2875,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{notificationUrl}}/api/notifications/{{notificationId}}/read"
-            }
+            "url": "{{notificationUrl}}/api/notifications/{{notificationId}}/read"
           },
           "event": [
             {
@@ -3010,9 +2894,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{notificationUrl}}/api/notifications/devices"
-            },
+            "url": "{{notificationUrl}}/api/notifications/devices",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"token\": \"fcm-token-from-device\",\n  \"platform\": \"ANDROID\"\n}",
@@ -3097,9 +2979,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{notificationUrl}}/api/admin/notifications"
-            }
+            "url": "{{notificationUrl}}/api/admin/notifications"
           },
           "event": [
             {
@@ -3118,9 +2998,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{notificationUrl}}/api/admin/notifications/{{notificationId}}/deliveries"
-            }
+            "url": "{{notificationUrl}}/api/admin/notifications/{{notificationId}}/deliveries"
           },
           "event": [
             {
@@ -3154,9 +3032,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/support-status"
-            }
+            "url": "{{supportUrl}}/api/support-status"
           },
           "event": [
             {
@@ -3175,9 +3051,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/support/threads"
-            }
+            "url": "{{supportUrl}}/api/support/threads"
           },
           "event": [
             {
@@ -3196,9 +3070,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/support/threads"
-            },
+            "url": "{{supportUrl}}/api/support/threads",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"subject\": \"Lukla flight delayed\",\n  \"message\": \"What now?\"\n}",
@@ -3227,9 +3099,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/support/threads/{{threadId}}/messages"
-            },
+            "url": "{{supportUrl}}/api/support/threads/{{threadId}}/messages",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"body\": \"We are 2 people.\"\n}",
@@ -3257,9 +3127,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/support/callbacks"
-            },
+            "url": "{{supportUrl}}/api/support/callbacks",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"phoneNumber\": \"+977 980-0000000\",\n  \"preferredTime\": \"Weekday evenings NPT\"\n}",
@@ -3344,9 +3212,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/threads?status=OPEN"
-            }
+            "url": "{{supportUrl}}/api/admin/support/threads?status=OPEN"
           },
           "event": [
             {
@@ -3365,9 +3231,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}"
-            }
+            "url": "{{supportUrl}}/api/admin/support/threads/{{threadId}}"
           },
           "event": [
             {
@@ -3386,9 +3250,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/pick-up"
-            }
+            "url": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/pick-up"
           },
           "event": [
             {
@@ -3407,9 +3269,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/messages"
-            },
+            "url": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/messages",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"body\": \"We'll rebook you on the next flight.\"\n}",
@@ -3437,9 +3297,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/close"
-            }
+            "url": "{{supportUrl}}/api/admin/support/threads/{{threadId}}/close"
           },
           "event": [
             {
@@ -3458,9 +3316,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{supportUrl}}/api/admin/support/callbacks?status=PENDING"
-            }
+            "url": "{{supportUrl}}/api/admin/support/callbacks?status=PENDING"
           },
           "event": [
             {
@@ -3487,9 +3343,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{gatewayUrl}}/privacy"
-            }
+            "url": "{{gatewayUrl}}/privacy"
           },
           "event": [
             {
@@ -3509,9 +3363,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{gatewayUrl}}/terms"
-            }
+            "url": "{{gatewayUrl}}/terms"
           },
           "event": [
             {
@@ -3531,9 +3383,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{gatewayUrl}}/delete-account"
-            }
+            "url": "{{gatewayUrl}}/delete-account"
           },
           "event": [
             {
@@ -3561,9 +3411,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/reviews/destinations/1?page=0&size=10"
-            },
+            "url": "{{bookingUrl}}/api/reviews/destinations/1?page=0&size=10",
             "description": "Average + 5..1 histogram + newest published reviews. Never contains customer or booking ids."
           },
           "event": [
@@ -3602,9 +3450,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/review"
-            },
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/review",
             "description": "eligible=false with ineligibleReason TRIP_NOT_CONFIRMED / TRIP_NOT_FINISHED, eligibleFrom = last trip day."
           },
           "event": [
@@ -3624,9 +3470,7 @@
           "request": {
             "method": "PUT",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/bookings/{{bookingId}}/review"
-            },
+            "url": "{{bookingUrl}}/api/bookings/{{bookingId}}/review",
             "description": "409 TRIP_NOT_FINISHED before the trip ends. Rating 1-5, body 10-2000 chars, title <= 80.",
             "body": {
               "mode": "raw",
@@ -3712,9 +3556,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/reviews?status=PENDING&page=0&size=20"
-            },
+            "url": "{{bookingUrl}}/api/admin/reviews?status=PENDING&page=0&size=20",
             "description": "status = PENDING | PUBLISHED | REJECTED | HIDDEN | ALL. pendingCount feeds the nav badge."
           },
           "event": [
@@ -3735,9 +3577,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
-            },
+            "url": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate",
             "description": "From PENDING or HIDDEN.",
             "body": {
               "mode": "raw",
@@ -3766,9 +3606,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
-            },
+            "url": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate",
             "description": "From PENDING; note required.",
             "body": {
               "mode": "raw",
@@ -3797,9 +3635,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": {
-              "raw": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate"
-            },
+            "url": "{{bookingUrl}}/api/admin/reviews/{{reviewId}}/moderate",
             "description": "From PUBLISHED; note required, never shown to the customer.",
             "body": {
               "mode": "raw",

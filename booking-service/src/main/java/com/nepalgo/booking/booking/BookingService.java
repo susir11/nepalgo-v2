@@ -69,7 +69,8 @@ public class BookingService {
         booking.setCustomerId(customerId);
         booking.setDestinationId(request.destinationId());
         booking.setDestinationNameSnapshot(destination.name());
-        booking.setItineraryVersionId(request.itineraryVersionId());
+        // From the catalogue, never from the client: id and snapshot must describe the same itinerary.
+        booking.setItineraryVersionId(destination.defaultItinerary().id());
 
         try {
             booking.setItinerarySnapshot(objectMapper.writeValueAsString(destination.defaultItinerary()));

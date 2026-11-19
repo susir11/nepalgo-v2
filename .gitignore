@@ -10,3 +10,6 @@ target/
 # Database dumps (contain personal data)
 backups/
 admin-frontend/.vite/
+
+# local service logs (start-extra-services.ps1)
+/logs/
