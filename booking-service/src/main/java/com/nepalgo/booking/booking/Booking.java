@@ -42,7 +42,8 @@ public class Booking {
     @Column(name = "destination_name_snapshot", nullable = false)
     private String destinationNameSnapshot;
 
-    @Column(name = "itinerary_version_id", nullable = false)
+    // NULL for a manual booking with a custom (ad-hoc) itinerary, spec 8b.
+    @Column(name = "itinerary_version_id")
     private Long itineraryVersionId;
 
     // JdbcTypeCode(SqlTypes.JSON) tells Hibernate to treat this as

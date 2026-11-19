@@ -207,11 +207,25 @@ public class BookingService {
     public AdminBookingSummaryResponse createManual(Long adminId, CreateManualBookingRequest request) {
         requireActiveCustomer(request.customerId());
         var destination = catalogClient.getDestination(request.destinationId());
-        if (destination.defaultItinerary() == null) {
-            throw new IllegalStateException("Destination has no DEFAULT itinerary authored yet");
+        boolean custom = request.customItinerary() != null && !request.customItinerary().isEmpty();
+        // Snapshot uses the SAME JSON shape as a catalogue version, so the app and
+        // admin render a custom trip with zero changes. id = null, tier = CUSTOM.
+        CatalogClient.ItineraryVersionResponse itinerary = custom
+                ? new CatalogClient.ItineraryVersionResponse(null, "CUSTOM",
+                    java.util.stream.IntStream.range(0, request.customItinerary().size())
+                        .mapToObj(i -> {
+                            var d = request.customItinerary().get(i);
+                            return new CatalogClient.ItineraryDayResponse(i + 1, d.narrative().trim(),
+                                    d.hotelName() == null || d.hotelName().isBlank() ? null : d.hotelName().trim(),
+                                    d.hotelLat(), d.hotelLng());
+                        }).toList())
+                : destination.defaultItinerary();
+        if (itinerary == null) {
+            throw new InvalidBookingStateException(
+                    "This destination has no DEFAULT itinerary yet. Add a custom itinerary or author the default first.");
         }
 
-        int durationDays = destination.defaultItinerary().days().size();
+        int durationDays = itinerary.days().size();
         LocalDate endDate = request.arrivalDate().plusDays(durationDays);
 
         List<Booking> overlaps = bookingRepository.findOverlappingHolds(
@@ -228,10 +242,10 @@ public class BookingService {
         booking.setCustomerId(request.customerId());
         booking.setDestinationId(request.destinationId());
         booking.setDestinationNameSnapshot(destination.name());
-        booking.setItineraryVersionId(request.itineraryVersionId());
+        booking.setItineraryVersionId(custom ? null : itinerary.id());   // never a client-supplied id
 
         try {
-            booking.setItinerarySnapshot(objectMapper.writeValueAsString(destination.defaultItinerary()));
+            booking.setItinerarySnapshot(objectMapper.writeValueAsString(itinerary));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to serialize itinerary snapshot", e);
         }
@@ -245,7 +259,8 @@ public class BookingService {
         booking.setInternalNotes(request.internalNotes());
 
         bookingRepository.save(booking);
-        logAudit(adminId, "BOOKING_CREATED_MANUALLY", booking.getId(), request.customerId(), null);
+        logAudit(adminId, "BOOKING_CREATED_MANUALLY", booking.getId(), request.customerId(),
+                custom ? "custom itinerary, " + durationDays + " days" : "DEFAULT itinerary, " + durationDays + " days");
 
         return toAdminSummary(booking);
     }

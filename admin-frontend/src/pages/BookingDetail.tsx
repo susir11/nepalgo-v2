@@ -33,7 +33,8 @@ export default function BookingDetail() {
   const bl = bill.data;
   const t = bl?.totals;
   let days: any[] = [];
-  try { days = JSON.parse(b.itinerarySnapshot)?.days ?? []; } catch { /* snapshot is always JSON; be defensive */ }
+  let tier = "DEFAULT";
+  try { const snap = JSON.parse(b.itinerarySnapshot); days = snap?.days ?? []; tier = snap?.tier ?? tier; } catch { /* snapshot is always JSON; be defensive */ }
   const latestReceipt = receipts.data?.[0];
 
   // ---------------------------------------------------------------- actions (each confirm-before-commit)
@@ -196,7 +197,7 @@ export default function BookingDetail() {
             )) : <Empty>No consent recorded yet.</Empty>}
           </Card>
           <Notes booking={b} onSaved={refresh} />
-          <Card title="Itinerary (snapshot at booking time)">
+          <Card title={tier === "CUSTOM" ? "Itinerary (custom, agreed on WhatsApp)" : "Itinerary (snapshot at booking time)"}>
             <ol className="space-y-2 text-sm">
               {days.map((d) => <li key={d.dayNumber}><b>Day {d.dayNumber}.</b> {d.narrative}{d.hotelName ? <span className="text-muted"> — {d.hotelName}</span> : null}</li>)}
             </ol>

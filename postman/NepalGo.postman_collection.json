@@ -1080,13 +1080,14 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customerId\": 1,\n  \"destinationId\": \"{{destinationId}}\",\n  \"itineraryVersionId\": \"{{itineraryVersionId}}\",\n  \"partySize\": 4,\n  \"arrivalDate\": \"{{arrivalDate}}\",\n  \"guideRequested\": false,\n  \"porterRequested\": true,\n  \"internalNotes\": \"Phone booking, customer called in\"\n}",
+              "raw": "{\n  \"customerId\": 1,\n  \"destinationId\": \"{{destinationId}}\",\n  \"partySize\": 4,\n  \"arrivalDate\": \"{{arrivalDate}}\",\n  \"guideRequested\": false,\n  \"porterRequested\": true,\n  \"internalNotes\": \"Phone booking, customer called in\",\n  \"customItinerary\": [\n    {\n      \"narrative\": \"Arrive Kathmandu, private transfer, briefing dinner.\",\n      \"hotelName\": \"Dwarika's\",\n      \"hotelLat\": 27.7096,\n      \"hotelLng\": 85.3315\n    },\n    {\n      \"narrative\": \"Flight to Pokhara, sunset boat on Phewa Lake.\"\n    },\n    {\n      \"narrative\": \"Sunrise at Sarangkot, return flight.\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
+            },
+            "description": "Spec 8b. Starts at AWAITING_PAYMENT. Optional customItinerary (1-60 days, numbered by order) = ad-hoc trip agreed on WhatsApp, stored only in this booking's snapshot (tier CUSTOM). Omit it to use the destination's DEFAULT itinerary."
           },
           "event": [
             {
