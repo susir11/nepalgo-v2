@@ -26,6 +26,16 @@ public class CatalogExceptionHandler {
         return problem;
     }
 
+    // Bad input from the admin (e.g. duplicate day numbers, unknown itinerary tier): 400, not 500.
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleBadInput(IllegalArgumentException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setTitle("Invalid Request");
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "INVALID_REQUEST");
+        return problem;
+    }
+
     @ExceptionHandler(com.nepalgo.catalog.image.InvalidImageException.class)
     public ProblemDetail handleInvalidImage(com.nepalgo.catalog.image.InvalidImageException e) {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

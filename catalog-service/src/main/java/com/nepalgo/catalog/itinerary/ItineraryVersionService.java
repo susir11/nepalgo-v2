@@ -32,10 +32,22 @@ public class ItineraryVersionService {
                     return versionRepository.save(v);
                 });
 
+        // Day numbers must be unique within one itinerary (DB constraint
+        // uq_itinerary_days_version_day): reject clearly instead of a 500.
+        long distinct = request.days().stream().mapToInt(d -> d.dayNumber()).distinct().count();
+        if (distinct != request.days().size()) {
+            throw new IllegalArgumentException("Each day number may appear only once.");
+        }
+
         // Whole-document replace: wipe existing days, insert the submitted
         // set. Simpler and safer than diffing — admin always submits the
         // complete itinerary text, never a partial day list.
         dayRepository.deleteAll(dayRepository.findByItineraryVersionIdOrderByDayNumber(version.getId()));
+        // FLUSH NOW. Hibernate's flush order runs INSERTs before DELETEs, so without this
+        // the new "day 1" hits the unique (version, day_number) constraint while the old
+        // "day 1" still exists -> 500 on every re-save of an existing itinerary.
+        // Like a ledger: the reversal must be posted before the corrected entry.
+        dayRepository.flush();
 
         List<ItineraryDay> days = request.days().stream().map(dto -> {
             ItineraryDay day = new ItineraryDay();
