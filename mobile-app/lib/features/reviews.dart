@@ -335,6 +335,11 @@ class _ReviewSheetState extends ConsumerState<_ReviewSheet> {
         const SizedBox(height: 4),
         Text('Please keep it about the trip. No phone numbers, e-mail addresses or personal details.',
             style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 4),
+        // Transparency: tell people exactly what becomes public before they submit.
+        Text('Once our team approves it, your review is public with your first name and last initial '
+            '(from the lead booker name) and your travel month. Deleting your account deletes your reviews.',
+            style: Theme.of(context).textTheme.bodySmall),
         if (widget.existing != null) ...[
           const SizedBox(height: 4),
           Text('Edited reviews are checked again before they appear.', style: Theme.of(context).textTheme.bodySmall),

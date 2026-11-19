@@ -32,6 +32,7 @@ public class ReviewService {
     private final BookingRepository bookingRepository;
     private final BookingAuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
+    private final com.nepalgo.booking.client.AuthClient authClient;
 
     // ---------------- customer ----------------
 
@@ -47,6 +48,11 @@ public class ReviewService {
     @Transactional
     public OwnReview write(Long customerId, Long bookingId, WriteReviewRequest req) {
         Booking b = ownedBooking(customerId, bookingId);
+        // Same guard as new trip requests: a suspended account (e.g. fraud check) can't
+        // publish content. Fail-closed: auth-service down -> 503, nothing written.
+        if ("SUSPENDED".equals(authClient.customer(customerId).status())) {
+            throw new CustomerSuspendedException();
+        }
         String reason = ReviewPolicy.ineligibleReason(b, today());
         if (reason != null) {
             throw new ReviewException(HttpStatus.CONFLICT, reason,
