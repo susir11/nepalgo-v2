@@ -36,5 +36,6 @@ Tokens are cached in `~/.nepalgo-e2e/tokens.json` (outside the repository; overr
 | `e2e_payment_window.py` | Payment window from Billing Settings drives expiry without restarts |
 | `e2e_manual_itinerary.py` | Manual bookings with a custom (ad-hoc) itinerary, validation, DEFAULT fallback |
 | `e2e_due_presign.py` | "Pay by" deadline on bookings; presigned receipt links open |
+| `e2e_photos.py` | Add photo by URL (SSRF guard: internal ports, metadata IP, private ranges, loopback, file://, non-images), gateway-served sizes, remove + stored files deleted. Adds and removes a CC-licensed test photo. |
 
 Each script prints `PASS`/`FAIL` per check and a final `n/m passed`. Run them from the repository root, e.g. `python tests/e2e/e2e_reviews.py`.
