@@ -12,7 +12,12 @@ flutter run -d chrome `
   --dart-define=FIREBASE_API_KEY=<firebase web api key>
 ```
 
-Android emulator: `--dart-define=API_BASE=http://10.0.2.2:8080` (needs Android Studio + SDK).
+Android emulator (one-time: `copy dart_defines.example.json dart_defines.json` and paste the Firebase web API key; the file is gitignored):
+
+```powershell
+.uild-android.ps1          # build + install + launch on the running emulator
+.uild-android.ps1 -Fresh   # same, but wipe app data (shows onboarding again)
+```
 
 ## Structure
 

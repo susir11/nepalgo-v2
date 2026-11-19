@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local build config (holds the Firebase web API key) — copy dart_defines.example.json
+/dart_defines.json
