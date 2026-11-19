@@ -39,7 +39,7 @@ spring:
             - id: booking-service
               uri: lb://booking-service
               predicates:
-                - Path=/api/bookings/**,/api/admin/bookings/**,/api/admin/feature-flags/booking
+                - Path=/api/bookings/**,/api/admin/bookings/**,/api/admin/feature-flags/booking,/api/reviews/**,/api/admin/reviews/**
             - id: payment-service
               uri: lb://payment-service
               predicates:

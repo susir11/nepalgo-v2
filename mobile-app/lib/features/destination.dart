@@ -10,6 +10,7 @@ import '../core/theme.dart';
 import '../core/widgets.dart';
 import 'explore.dart' show weatherProvider;
 import 'profile.dart' show walletProvider;
+import 'reviews.dart';
 
 final destinationProvider = FutureProvider.family<Map<String, dynamic>, int>(
     (ref, id) => ref.read(apiProvider).get<Map<String, dynamic>>('/api/destinations/$id'));
@@ -81,6 +82,7 @@ class _Body extends ConsumerWidget {
           const SectionTitle('Your itinerary'),
           if (days.isEmpty) const NgCard(child: Text('The itinerary for this trip is being finalised. Ask us on WhatsApp.'))
           else for (final day in days) Padding(padding: const EdgeInsets.only(bottom: 12), child: _DayCard(day: day)),
+          DestinationReviewsSection(destinationId: dest['id'] as int),
           if (itinerary != null) ...[
             const SectionTitle('Plan your trip'),
             _TripRequestForm(dest: dest, itineraryId: itinerary['id'] as int, days: days.length),

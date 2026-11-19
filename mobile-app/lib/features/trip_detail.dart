@@ -13,6 +13,7 @@ import '../core/providers.dart';
 import '../core/theme.dart';
 import '../core/widgets.dart';
 import 'profile.dart' show walletProvider;
+import 'reviews.dart';
 import 'trips.dart';
 
 final tripProvider = FutureProvider.family<Map<String, dynamic>, int>(
@@ -564,6 +565,8 @@ class _Confirmed extends ConsumerWidget {
           Center(child: Container(color: Colors.white, padding: const EdgeInsets.all(8), child: QrImageView(data: b['voucherCode'], size: 200))),
         ]),
       ),
+      const SizedBox(height: 12),
+      TripReviewCard(booking: b),
       const SizedBox(height: 16),
       TextButton(
         onPressed: () async {

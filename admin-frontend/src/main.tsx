@@ -26,6 +26,7 @@ const Staff = lazy(() => import("./pages/Staff"));
 const Flags = lazy(() => import("./pages/Flags"));
 const Alerts = lazy(() => import("./pages/Alerts"));
 const SupportInbox = lazy(() => import("./pages/SupportInbox"));
+const Reviews = lazy(() => import("./pages/Reviews"));
 
 // Admin data changes under the user's feet (other admins, customers paying),
 // so keep it fresh but don't refetch on every keystroke.
@@ -67,6 +68,7 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="flags" element={<Flags />} />
                     <Route path="alerts" element={<Alerts />} />
                     <Route path="support" element={<SupportInbox />} />
+                    <Route path="reviews" element={<Reviews />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Route>
                 </Routes>

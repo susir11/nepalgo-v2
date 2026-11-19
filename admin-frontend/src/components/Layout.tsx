@@ -14,7 +14,10 @@ const NAV: { group: string; items: Item[] }[] = [
     { to: "/refunds", label: "Refund requests" },
     { to: "/support", label: "Support inbox" },
   ] },
-  { group: "Catalogue", items: [{ to: "/destinations", label: "Destinations & itineraries" }] },
+  { group: "Catalogue", items: [
+    { to: "/destinations", label: "Destinations & itineraries" },
+    { to: "/reviews", label: "Reviews" },
+  ] },
   { group: "Money", items: [
     { to: "/credits", label: "Wallet & travel credits" },
     { to: "/billing", label: "Billing, FX & export" },
@@ -36,6 +39,9 @@ export default function Layout() {
   const isSuper = session?.role === "SUPER_ADMIN";
   const alerts = useGet<any>("/api/admin/notifications");
   const unread = alerts.data?.unread ?? 0;
+  // Same query key as the Reviews page uses, so moderating there updates this badge too.
+  const reviewQueue = useGet<any>("/api/admin/reviews?status=PENDING&page=0&size=20");
+  const pendingReviews = reviewQueue.data?.pendingCount ?? 0;
   return (
     <div className="flex min-h-full flex-col md:flex-row">
       <aside className="bg-nav px-4 py-5 text-white md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto">
@@ -53,6 +59,7 @@ export default function Layout() {
                 <NavLink key={i.to} to={i.to} end={i.to === "/" || i.to === "/bookings"}
                   className={({ isActive }) => `block whitespace-nowrap rounded-full px-3 py-2 text-sm ${isActive ? "bg-primary text-white" : "text-white/80 hover:bg-white/10"}`}>
                   {i.label}{i.to === "/alerts" && unread > 0 && <span className="ml-2 rounded-full bg-secondary px-2 text-xs font-bold text-nav">{unread}</span>}
+                  {i.to === "/reviews" && pendingReviews > 0 && <span className="ml-2 rounded-full bg-secondary px-2 text-xs font-bold text-nav">{pendingReviews}</span>}
                 </NavLink>
               ))}
             </div>

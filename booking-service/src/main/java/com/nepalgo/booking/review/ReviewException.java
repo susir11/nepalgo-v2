@@ -1,0 +1,18 @@
+package com.nepalgo.booking.review;
+
+import org.springframework.http.HttpStatus;
+
+/** One exception type carrying HTTP status + machine code, mapped by ReviewExceptionHandler. */
+public class ReviewException extends RuntimeException {
+    private final HttpStatus status;
+    private final String code;
+
+    public ReviewException(HttpStatus status, String code, String message) {
+        super(message);
+        this.status = status;
+        this.code = code;
+    }
+
+    public HttpStatus getStatus() { return status; }
+    public String getCode() { return code; }
+}

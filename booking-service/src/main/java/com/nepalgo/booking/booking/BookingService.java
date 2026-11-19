@@ -35,6 +35,7 @@ public class BookingService {
     private final CatalogClient catalogClient;
     private final VoucherCodeGenerator voucherCodeGenerator;
     private final ObjectMapper objectMapper;
+    private final com.nepalgo.booking.review.ReviewRepository reviewRepository;
     private final CancellationTierCalculator cancellationTierCalculator;
     private final PaymentClient paymentClient;
     private final LegalClient legalClient;
@@ -445,6 +446,8 @@ public class BookingService {
             }
         }
         bookingRepository.saveAll(bookings);
+        // Reviews are the customer's own words: they leave with the account (same transaction).
+        reviewRepository.deleteByCustomerId(customerId);
         return new ErasureResult(withdrawn, anonymized);
     }
 

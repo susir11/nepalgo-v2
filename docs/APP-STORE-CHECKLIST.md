@@ -61,6 +61,7 @@ No card data is collected (Payoneer). No advertising, no data sale. Data encrypt
 
 - **In-app account deletion** (Profile → Delete account, typed DELETE confirmation): open requests withdrawn, personal data erased from bookings, inbox/devices erased, Firebase login deleted, NepalGo ID retired; invoices kept. Web deletion link for Google Play: `/delete-account`.
 
+- **User-generated content (Apple 1.2)**: destination reviews are pre-moderated (staff publish/reject/take down in the admin portal), verified travellers only, reviews deleted with the account.
 - Terms + Privacy versioned, consent recorded per booking (legal-service).
 - Light / Dark / System appearance; accessible labels on nav and icon buttons; customer copy never shows raw status codes.
 - Error, empty and offline states on every screen; unknown deep links show a friendly page.

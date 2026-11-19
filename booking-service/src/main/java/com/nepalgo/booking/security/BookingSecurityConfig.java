@@ -53,7 +53,8 @@ public class BookingSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admin/bookings/**", "/api/admin/customers/**", "/api/admin/refund-requests/**")
+                        .requestMatchers("/api/admin/bookings/**", "/api/admin/customers/**", "/api/admin/refund-requests/**",
+                                "/api/admin/reviews/**")
                         .hasAnyAuthority("SUPER_ADMIN", "OPS")
                         .anyRequest().authenticated()
                 )
@@ -88,6 +89,21 @@ public class BookingSecurityConfig {
                 .addFilterBefore(new InternalApiKeyFilter(internalApiKey), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth.anyRequest().hasAuthority("INTERNAL"))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+        return http.build();
+    }
+
+    // Public, read-only: published destination reviews. No token, GET only —
+    // anything else on this path is refused even though nothing is mapped there.
+    @Bean
+    @Order(4)
+    public SecurityFilterChain publicReviewsSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/reviews/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reviews/**").permitAll()
+                        .anyRequest().denyAll());
         return http.build();
     }
 
