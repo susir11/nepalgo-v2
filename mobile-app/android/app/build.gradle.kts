@@ -7,6 +7,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ---- Firebase (FlutterFire) ----
+// The Google Services plugin turns google-services.json into Android resources
+// (Firebase app id, default_web_client_id for Google sign-in). The JSON is
+// gitignored, so apply the plugin only when it exists: CI and fresh checkouts
+// still build, just without push / Google sign-in (the app hides them).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // ---- Release signing ----
 // The upload keystore + its passwords live OUTSIDE git (android/key.properties and *.jks are
 // gitignored). Think of it like a bank's HSM signing key: whoever holds it can publish

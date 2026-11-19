@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'env.dart';
+import 'push.dart';
 
 // ---------------------------------------------------------------- infrastructure
 final tokenStoreProvider = Provider<TokenStore>((_) => TokenStore());
@@ -95,10 +97,61 @@ class AuthController extends Notifier<AuthState> {
     await _firebaseCall('accounts:update', {'idToken': r['idToken'], 'displayName': name, 'returnSecureToken': true}).then((u) => _exchange(u['idToken']));
   }
 
+  /// Google sign-in (spec 5). Same pipeline as e-mail, only step 1 differs:
+  ///  a. Google (Credential Manager on Android) proves who the user is -> Google ID token
+  ///  b. Firebase REST signInWithIdp turns it into a FIREBASE ID token (account is
+  ///     created on first use; a gmail address already registered with a password
+  ///     is linked by Firebase, so it stays ONE NepalGo account)
+  ///  c. the existing /firebase/exchange issues our own tokens -> no backend change.
+  /// Returns false if the user closed the Google sheet (not an error).
+  Future<bool> signInWithGoogle() async {
+    if (!FirebaseSetup.ready) {
+      throw ApiException(null, 'CONFIG', 'Google sign-in is not configured in this build.');
+    }
+    final google = GoogleSignIn.instance;
+    if (!_googleInitialized) {
+      await google.initialize();   // Android reads the web client id from google-services.json
+      _googleInitialized = true;
+    }
+    final GoogleSignInAccount account;
+    try {
+      account = await google.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled || e.code == GoogleSignInExceptionCode.interrupted) return false;
+      throw ApiException(null, 'GOOGLE_${e.code.name}', 'Google sign-in failed. Please try again or use e-mail.');
+    }
+    final googleIdToken = account.authentication.idToken;
+    if (googleIdToken == null) throw ApiException(null, 'GOOGLE_NO_TOKEN', 'Google sign-in failed. Please try again.');
+    final r = await _firebaseCall('accounts:signInWithIdp', {
+      'postBody': 'id_token=$googleIdToken&providerId=google.com',
+      'requestUri': 'http://localhost',
+      'returnIdpCredential': true,
+      'returnSecureToken': true,
+    });
+    if (r['needConfirmation'] == true || r['idToken'] == null) {
+      // Non-gmail address that already has a password account: Firebase won't merge
+      // silently (that would let anyone with that Google identity take it over).
+      await google.signOut();
+      throw ApiException(409, 'ACCOUNT_EXISTS_WITH_PASSWORD',
+          'This e-mail already has a NepalGo password. Sign in with your password instead.');
+    }
+    await _exchange(r['idToken']);
+    return true;
+  }
+
+  bool _googleInitialized = false;
+
   // Spec 5: Firebase sends the reset e-mail; we only provide the entry point.
   Future<void> sendPasswordReset(String email) => _firebaseCall('accounts:sendOobCode', {'requestType': 'PASSWORD_RESET', 'email': email});
 
   Future<void> signOut() async {
+    // Un-enroll this phone from push BEFORE the access token goes away.
+    await ref.read(pushProvider).unregister();
+    if (_googleInitialized) {
+      try {
+        await GoogleSignIn.instance.signOut();   // next Google login can pick a different account
+      } catch (_) {}
+    }
     final store = ref.read(tokenStoreProvider);
     final rt = await store.refreshToken();
     if (rt != null) {
@@ -114,7 +167,7 @@ class AuthController extends Notifier<AuthState> {
   /// anonymised, open requests withdrawn, tax records kept), then forgets the
   /// session locally. Throws ApiException (409 = blocked for now, 503 = retry).
   Future<void> deleteAccount() async {
-    await _api.delete('/api/v1/auth/me', {'confirmation': 'DELETE'});
+    await _api.delete('/api/v1/auth/me', {'confirmation': 'DELETE'});   // server also erases device tokens
     await ref.read(tokenStoreProvider).clear();
     state = const AuthState(AuthStatus.signedOut);
   }

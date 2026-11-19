@@ -6,7 +6,7 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 
 | Item | Why | What to build |
 |---|---|---|
-| **Sign in with Apple** (iOS) | If the iOS app offers Google/Facebook login, Apple requires Sign in with Apple too (Guideline 4.8). | Add when social login is enabled (FlutterFire config files needed). |
+| **Sign in with Apple** (iOS) | The app now offers Google login, so Apple requires Sign in with Apple too (Guideline 4.8) before any iOS release. | Needs the paid Apple Developer account (Services ID + key), then enable Apple in Firebase Auth. Android release is NOT blocked by this. |
 
 ## ⚠️ Before first build
 
@@ -20,8 +20,10 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
   then `android/key.properties`: `storePassword=…`, `keyPassword=…`, `keyAlias=upload`, `storeFile=C:/keys/nepalgo-upload.jks`; build with `flutter build appbundle --release --dart-define-from-file=dart_defines.json`. Verified 2026-11-19: the release bundle builds (54 MB .aab; Play serves smaller per-device APKs) and, without `key.properties`, is signed `CN=Android Debug` as intended — check `jarsigner -verify -verbose -certs` shows YOUR certificate before uploading. Enable Play App Signing. iOS: distribution certificate + provisioning profile (needs a Mac).
 - [ ] `API_BASE` and `FIREBASE_API_KEY` passed with `--dart-define` for the production build; production Firebase project.
 - [ ] Android `targetSdk` = current Play requirement; iOS minimum version decided.
-- [ ] FlutterFire: `google-services.json` (Android) + `GoogleService-Info.plist` (iOS) for push (FCM/APNs key uploaded to Firebase) and social login.
-- [ ] Register the FCM device token after login: `POST /api/notifications/devices` (endpoint exists; app wiring pending with firebase_messaging).
+- [x] FlutterFire Android: `google-services.json` generated (gitignored), Google sign-in + FCM wired; Gradle applies the Google Services plugin only when the file exists.
+- [ ] FlutterFire iOS: download `GoogleService-Info.plist` from the Firebase console (Windows CLI skipped it) + upload an APNs key for iOS push.
+- [ ] Add the **upload key** and **Play App Signing** SHA-1/SHA-256 to the Firebase Android app, or Google sign-in fails in Play builds (only the debug key is registered now).
+- [x] FCM device token registered after login when notifications are allowed; permission asked after the first trip request; un-registered on sign-out; tapping a push opens that trip.
 
 ## Permissions (only what we use)
 

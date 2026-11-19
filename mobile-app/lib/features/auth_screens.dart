@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/providers.dart';
+import '../core/push.dart' show FirebaseSetup;
 import '../core/theme.dart';
 import '../core/widgets.dart';
 
@@ -80,7 +81,7 @@ class _LoginState extends ConsumerState<LoginScreen> {
           const SizedBox(height: 4),
           FilledButton(onPressed: _busy ? null : _submit, child: _busy ? const _Spinner() : const Text('Sign in')),
           const SizedBox(height: 16),
-          const _SocialNote(),
+          const _SocialSignIn(),
           const SizedBox(height: 8),
           TextButton(onPressed: () => context.go('/signup'), child: const Text('New to NepalGo? Create an account')),
         ],
@@ -181,15 +182,57 @@ class _ForgotState extends ConsumerState<ForgotPasswordScreen> {
       );
 }
 
-// Google / Apple / Facebook arrive with the FlutterFire config files (see README).
-class _SocialNote extends StatelessWidget {
-  const _SocialNote();
+// Social sign-in (spec 5). Google is live when the build has the FlutterFire
+// config (google-services.json / GoogleService-Info.plist). Apple + Facebook
+// need their developer accounts first. Apple MUST ship on iOS alongside Google
+// (App Store guideline 4.8) before an iOS release.
+class _SocialSignIn extends ConsumerStatefulWidget {
+  const _SocialSignIn();
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: context.ng.primaryTint, borderRadius: BorderRadius.circular(NgRadius.inner)),
-        child: Text('Google, Apple and Facebook sign-in coming soon.', textAlign: TextAlign.center, style: TextStyle(color: context.ng.primary, fontSize: 13)),
-      );
+  ConsumerState<_SocialSignIn> createState() => _SocialSignInState();
+}
+
+class _SocialSignInState extends ConsumerState<_SocialSignIn> {
+  bool _busy = false;
+
+  Future<void> _google() async {
+    setState(() => _busy = true);
+    try {
+      await ref.read(authProvider.notifier).signInWithGoogle();   // false = user closed the sheet
+    } catch (e) {
+      if (mounted) showError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final note = Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: context.ng.primaryTint, borderRadius: BorderRadius.circular(NgRadius.inner)),
+      child: Text(FirebaseSetup.ready ? 'Apple and Facebook sign-in coming soon.' : 'Google, Apple and Facebook sign-in coming soon.',
+          textAlign: TextAlign.center, style: TextStyle(color: context.ng.primary, fontSize: 13)),
+    );
+    if (!FirebaseSetup.ready) return note;
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Row(children: [
+        const Expanded(child: Divider()),
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: Text('or', style: Theme.of(context).textTheme.bodySmall)),
+        const Expanded(child: Divider()),
+      ]),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: _busy ? null : _google,
+        icon: _busy
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Text('G', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Color(0xFF4285F4))),
+        label: const Text('Continue with Google'),
+      ),
+      const SizedBox(height: 12),
+      note,
+    ]);
+  }
 }
 
 class _Spinner extends StatelessWidget {

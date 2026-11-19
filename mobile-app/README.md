@@ -19,6 +19,26 @@ Android emulator (one-time: `copy dart_defines.example.json dart_defines.json` a
 .uild-android.ps1 -Fresh   # same, but wipe app data (shows onboarding again)
 ```
 
+## Firebase (push notifications + Google sign-in) — optional per machine
+
+The native Firebase config files are **gitignored**. Without them the app still builds and
+runs (e-mail login works through the Firebase REST API); the Google button and push simply
+stay hidden. To enable them on a machine:
+
+```powershell
+npm install -g firebase-tools; firebase login
+dart pub global activate flutterfire_cli
+cd mobile-app
+flutterfire configure --platforms=android,ios --android-package-name=com.nepalgo.app --ios-bundle-id=com.nepalgo.app
+```
+
+Pick the SAME Firebase project auth-service uses (`nepalgo-4ff63`). Creates
+`android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist` (download it from the
+console if the CLI skips it on Windows) and `lib/firebase_options.dart` (unused by the code).
+Google sign-in on Android also needs this machine's signing SHA-1/SHA-256 added to the Android
+app in Firebase (debug key: `keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore
+-alias androiddebugkey -storepass android -keypass android`), then re-run `flutterfire configure`.
+
 ## Structure
 
 ```

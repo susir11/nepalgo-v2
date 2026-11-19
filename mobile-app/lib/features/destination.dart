@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/providers.dart';
+import '../core/push.dart' show pushProvider;
 import '../core/theme.dart';
 import '../core/widgets.dart';
 import 'explore.dart' show weatherProvider;
@@ -232,6 +233,9 @@ class _TripRequestState extends ConsumerState<_TripRequestForm> {
         await api.post('/api/store-credits/apply', {'bookingId': b['id'], 'codes': _credits.toList()});
         ref.invalidate(walletProvider);
       }
+      // First moment a notification clearly helps ("we will tell you when your bill is ready"):
+      // ask for permission now, never at first launch (store checklist). Not awaited.
+      ref.read(pushProvider).askAndRegister();
       if (mounted) context.pushReplacement('/trip/${b['id']}');
     } catch (e) {
       if (mounted) showError(context, e);
