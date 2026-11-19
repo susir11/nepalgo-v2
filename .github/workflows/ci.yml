@@ -37,16 +37,18 @@ jobs:
         with:
           path: ~/.m2/wrapper
           key: mvnw-${{ hashFiles(format('{0}/.mvn/wrapper/maven-wrapper.properties', matrix.service)) }}
-      # Network warm-up WITH retries: mvnw fetches Maven + dependencies from Maven Central,
-      # and a transient error there used to fail a random service in ~0 s (no test ever ran).
-      # The real build below runs once, so a genuine test failure still fails immediately.
-      - name: Download Maven and dependencies (retried)
+      # mvnw first downloads Maven itself; a transient error there used to fail a random
+      # service in ~0 s (no build or test ever ran). Bootstrap it with retries. Dependency
+      # downloads during the build already retry inside Maven (resolver default: 3).
+      # (A full dependency:resolve-plugins warm-up was tried and rejected: on a cold cache it
+      # probes private Flyway/Redgate feeds that answer 401 and fails deterministically.)
+      - name: Bootstrap Maven wrapper (retried)
         working-directory: ${{ matrix.service }}
         run: |
           chmod +x mvnw
           for attempt in 1 2 3; do
-            ./mvnw -B -ntp -q dependency:resolve dependency:resolve-plugins && exit 0
-            echo "::warning::download attempt $attempt failed, retrying in 20 s"; sleep 20
+            ./mvnw -B -ntp -q --version && exit 0
+            echo "::warning::Maven download attempt $attempt failed, retrying in 20 s"; sleep 20
           done
           exit 1
       # Unit + Testcontainers integration tests run here; the generated *ApplicationTests
