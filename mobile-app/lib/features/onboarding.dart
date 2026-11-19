@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/env.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
 
@@ -125,6 +126,6 @@ class _Backdrop extends StatelessWidget {
           colors: [Color(0xFF8FB3C9), Color(0xFF3E5B4C), Color(0xFF1D2B22)])),
     );
     if (url == null || url!.isEmpty) return placeholder;
-    return Image.network(url!, fit: BoxFit.cover, errorBuilder: (_, _, _) => placeholder);
+    return Image.network(mediaUrl(url) ?? '', fit: BoxFit.cover, errorBuilder: (_, _, _) => placeholder);
   }
 }

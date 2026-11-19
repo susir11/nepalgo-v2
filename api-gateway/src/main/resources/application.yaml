@@ -36,6 +36,19 @@ spring:
               uri: lb://catalog-service
               predicates:
                 - Path=/api/destinations/**,/api/admin/destinations/**
+            # Public destination photos, served from the image store (RustFS/S3) through the
+            # gateway so phones reach them on the same host as the API (an emulator can't
+            # reach the store's "localhost:9000"). READ-ONLY and ONLY the public images
+            # bucket: the private payment-receipts bucket is never routed.
+            # /media/destination-images/x.jpg -> {origin}/destination-images/x.jpg
+            # Production normally points catalog's S3_PUBLIC_URL_BASE at a CDN instead.
+            - id: destination-images
+              uri: ${MEDIA_ORIGIN:http://localhost:9000}
+              predicates:
+                - Path=/media/destination-images/**
+                - Method=GET,HEAD
+              filters:
+                - StripPrefix=1
             - id: booking-service
               uri: lb://booking-service
               predicates:

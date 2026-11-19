@@ -24,14 +24,14 @@ public class DestinationImage {
     @Column(name = "display_order", nullable = false)
     private int displayOrder = 0;
 
-    @Column(name = "thumbnail_url", nullable = false, length = 500)
-    private String thumbnailUrl;
+    @Column(name = "thumbnail_key", nullable = false, length = 500)
+    private String thumbnailKey;   // object key in the images bucket, NOT a URL (see V3)
 
-    @Column(name = "medium_url", nullable = false, length = 500)
-    private String mediumUrl;
+    @Column(name = "medium_key", nullable = false, length = 500)
+    private String mediumKey;   // object key in the images bucket, NOT a URL (see V3)
 
-    @Column(name = "full_url", nullable = false, length = 500)
-    private String fullUrl;
+    @Column(name = "full_key", nullable = false, length = 500)
+    private String fullKey;   // object key in the images bucket, NOT a URL (see V3)
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

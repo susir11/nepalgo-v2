@@ -17,6 +17,7 @@ public class DestinationService {
     private final DestinationImageRepository imageRepository;
     private final ItineraryVersionRepository itineraryVersionRepository;
     private final ItineraryDayRepository itineraryDayRepository;
+    private final com.nepalgo.catalog.image.ImageUrls imageUrls;
 
     @Transactional
     public DestinationDetailResponse create(CreateDestinationRequest request) {
@@ -67,8 +68,9 @@ public class DestinationService {
     }
 
     private DestinationDetailResponse toDetail(Destination d) {
-        List<String> imageUrls = imageRepository.findByDestinationIdOrderByDisplayOrder(d.getId())
-                .stream().map(DestinationImage::getFullUrl).toList();
+        List<DestinationDetailResponse.Image> images = imageRepository.findByDestinationIdOrderByDisplayOrder(d.getId())
+                .stream().map(i -> new DestinationDetailResponse.Image(i.getId(), imageUrls.of(i.getThumbnailKey()),
+                        imageUrls.of(i.getMediumKey()), imageUrls.of(i.getFullKey()))).toList();
 
         ItineraryVersionResponse defaultItinerary = itineraryVersionRepository
                 .findByDestinationIdAndTier(d.getId(), ItineraryTier.DEFAULT)
@@ -84,6 +86,6 @@ public class DestinationService {
 
         return new DestinationDetailResponse(d.getId(), d.getName(), d.getRegion(), d.getType(),
                 d.getDescription(), d.getBestSeason(), d.getBasePriceUsd(), d.getPermitNotes(),
-                imageUrls, defaultItinerary);
+                images.stream().map(DestinationDetailResponse.Image::fullUrl).toList(), defaultItinerary, images);
     }
 }

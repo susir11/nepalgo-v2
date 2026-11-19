@@ -7,17 +7,16 @@ import java.util.Map;
 public interface DestinationImageRepository extends JpaRepository<DestinationImage, Long> {
     List<DestinationImage> findByDestinationIdOrderByDisplayOrder(Long destinationId);
 
-    // Fetches only the first image per destination (display_order = 0 or
-// lowest), for use in list views — avoids loading every image for every
-// destination just to show one thumbnail each.
-    default Map<Long, String> findThumbnailUrlsByDestinationIds(List<Long> destinationIds) {
-        return findAll().stream()
-                .filter(img -> destinationIds.contains(img.getDestination().getId()))
-                .collect(java.util.stream.Collectors.groupingBy(
-                        img -> img.getDestination().getId(),
-                        java.util.stream.Collectors.collectingAndThen(
-                                java.util.stream.Collectors.minBy(java.util.Comparator.comparingInt(DestinationImage::getDisplayOrder)),
-                                opt -> opt.map(DestinationImage::getThumbnailUrl).orElse(null))));
+    List<DestinationImage> findByDestinationIdInOrderByDisplayOrder(List<Long> destinationIds);
+
+    /** Cover photo KEY (lowest display_order) per destination, for list views. */
+    default Map<Long, String> findCoverThumbnailKeys(List<Long> destinationIds) {
+        if (destinationIds.isEmpty()) return Map.of();
+        Map<Long, String> out = new java.util.HashMap<>();
+        for (DestinationImage img : findByDestinationIdInOrderByDisplayOrder(destinationIds)) {
+            out.putIfAbsent(img.getDestination().getId(), img.getThumbnailKey());   // first = lowest order
+        }
+        return out;
     }
 }
 

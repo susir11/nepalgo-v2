@@ -16,3 +16,13 @@ class Env {
   // Fallback WhatsApp number if the company profile can't be fetched.
   static const supportWhatsApp = String.fromEnvironment('SUPPORT_WHATSAPP', defaultValue: '9779800000000');
 }
+
+/// Image URLs from the catalog API may be RELATIVE ("/media/destination-images/...",
+/// served by the gateway in dev) or absolute (a CDN in production). Resolve them
+/// against the API base so a phone/emulator loads them from the host it already uses.
+String? mediaUrl(String? url) {
+  if (url == null || url.isEmpty) return null;
+  final u = Uri.tryParse(url);
+  if (u == null) return null;
+  return u.hasScheme ? url : Uri.parse(Env.apiBase).resolveUri(u).toString();
+}

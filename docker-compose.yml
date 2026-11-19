@@ -103,6 +103,7 @@ services:
     environment:
       <<: *common-env
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:[*]}
+      MEDIA_ORIGIN: http://rustfs:9000                # gateway /media/destination-images/** -> image store
     volumes: [ "./secrets:/app/secrets:ro" ]
     depends_on: [ eureka-server ]
     mem_limit: 420m
@@ -143,7 +144,7 @@ services:
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
       S3_ENDPOINT: http://rustfs:9000
-      S3_PUBLIC_URL_BASE: http://localhost:9000/destination-images
+      S3_PUBLIC_URL_BASE: /media/destination-images   # relative: served by the gateway (route destination-images)
     volumes: [ "./secrets:/app/secrets:ro" ]
     depends_on: [ postgres, eureka-server, rustfs ]
     mem_limit: 420m

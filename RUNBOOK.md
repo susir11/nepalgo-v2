@@ -53,7 +53,8 @@ Needs ~5 GB RAM free. Every container uses the **prod** profile: missing configu
 | `ALLOWED_ORIGINS` | gateway | Comma list of real origins, e.g. `https://admin.nepalgo.com`. Never `*`. |
 | `OPENWEATHERMAP_API_KEY` | catalog | |
 | `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`, `S3_ENDPOINT` | catalog, payment | Any S3-compatible store. Receipts bucket must be **private**. |
-| `S3_PUBLIC_URL_BASE` | catalog | CDN URL in front of the public images bucket |
+| `S3_PUBLIC_URL_BASE` | catalog | Base URL for destination photos: a CDN URL in front of the public images bucket, or `/media/destination-images` to serve them through the gateway (then set `MEDIA_ORIGIN`). Only keys are stored in the DB, so this can change any time. |
+| `MEDIA_ORIGIN` | gateway | Image store origin for the `/media/destination-images/**` route (e.g. `http://rustfs:9000`). GET/HEAD only; the receipts bucket is never routed. |
 | `S3_PUBLIC_ENDPOINT` | payment | Host put into presigned receipt links (what admins' browsers open, e.g. `https://files.example.com`). If a reverse proxy sits in front of the store it must pass the original `Host` header through, or the signature check fails. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL_FROM`, `OPS_ALERT_EMAIL` | notification | Transactional mail provider (SES, Postmark, …) |
 | `IN_APP_SUPPORT_CHAT_ENABLED` | support | Feature flag, default `false` |

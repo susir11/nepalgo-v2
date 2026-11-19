@@ -45,7 +45,10 @@ nepalgo:
     access-key: ${RUSTFS_ACCESS_KEY}
     secret-key: ${RUSTFS_SECRET_KEY}
     bucket: destination-images
-    public-url-base: http://localhost:9000/destination-images
+    # Relative on purpose: the gateway serves /media/** from the image store, so the app
+    # (emulator: 10.0.2.2:8080) and the admin portal load photos from the host they already use.
+    # Production sets an absolute CDN URL instead (S3_PUBLIC_URL_BASE).
+    public-url-base: /media/destination-images
 
 resilience4j:
   circuitbreaker:

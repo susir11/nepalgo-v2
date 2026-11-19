@@ -11,6 +11,7 @@ import '../core/theme.dart';
 import '../core/widgets.dart';
 import 'explore.dart' show weatherProvider;
 import 'profile.dart' show walletProvider;
+import 'photo_carousel.dart';
 import 'reviews.dart';
 
 final destinationProvider = FutureProvider.family<Map<String, dynamic>, int>(
@@ -39,7 +40,9 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final images = List<String>.from(dest['imageUrls'] ?? const []);
+    // Medium size (800 px) is plenty for a 300 px-tall hero; fall back to imageUrls for older APIs.
+    final images = (dest['images'] as List?)?.map((e) => (e as Map)['mediumUrl'] as String).toList()
+        ?? List<String>.from(dest['imageUrls'] ?? const []);
     final itinerary = dest['defaultItinerary'] as Map<String, dynamic>?;
     final days = List<Map<String, dynamic>>.from((itinerary?['days'] as List? ?? const []).map((e) => Map<String, dynamic>.from(e)));
     final weather = ref.watch(weatherProvider(dest['id'] as int)).value;
@@ -55,9 +58,7 @@ class _Body extends ConsumerWidget {
           child: CircleAvatar(backgroundColor: context.ng.card, child: BackButton(color: context.ng.ink, onPressed: () => context.pop())),
         ),
         flexibleSpace: FlexibleSpaceBar(
-          background: images.isEmpty
-              ? const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF9DB9C8), Color(0xFF4C6B57)])))
-              : PageView(children: [for (final u in images) Image.network(u, fit: BoxFit.cover)]),
+          background: images.isEmpty ? const PhotoPlaceholder() : PhotoCarousel(urls: images),
         ),
       ),
       SliverPadding(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
+import '../core/env.dart';
 import '../core/providers.dart';
 import '../core/theme.dart';
 import '../core/widgets.dart';
@@ -126,8 +127,8 @@ class _DestinationCard extends ConsumerWidget {
           child: AspectRatio(
             aspectRatio: 16 / 10,
             child: Stack(fit: StackFit.expand, children: [
-              d['thumbnailUrl'] != null
-                  ? Image.network(d['thumbnailUrl'], fit: BoxFit.cover, errorBuilder: (_, _, _) => const _ImagePlaceholder())
+              mediaUrl(d['thumbnailUrl'] as String?) != null
+                  ? Image.network(mediaUrl(d['thumbnailUrl'] as String?)!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const _ImagePlaceholder())
                   : const _ImagePlaceholder(),
               if (w != null)
                 Positioned(

@@ -20,6 +20,7 @@ import java.util.Map;
 public class DestinationPublicController {
 
     private final DestinationRepository destinationRepository;
+    private final com.nepalgo.catalog.image.ImageUrls imageUrls;
     private final DestinationImageRepository imageRepository;
     private final DestinationService destinationService;
     private final WeatherService weatherService;
@@ -43,12 +44,12 @@ public class DestinationPublicController {
                 q, region, type, minPrice, maxPrice, minDuration, maxDuration, PageRequest.of(page, size));
 
         List<Long> ids = result.getContent().stream().map(Destination::getId).toList();
-        Map<Long, String> thumbnails = imageRepository.findThumbnailUrlsByDestinationIds(ids);
+        Map<Long, String> thumbnails = imageRepository.findCoverThumbnailKeys(ids);
 
         List<DestinationSummaryResponse> content = result.getContent().stream()
                 .map(d -> new DestinationSummaryResponse(
                         d.getId(), d.getName(), d.getRegion(), d.getType(),
-                        d.getBasePriceUsd(), thumbnails.get(d.getId())))
+                        d.getBasePriceUsd(), imageUrls.of(thumbnails.get(d.getId()))))
                 .toList();
 
         return ResponseEntity.ok(new DestinationPageResponse(

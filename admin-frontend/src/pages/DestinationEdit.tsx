@@ -19,6 +19,9 @@ export default function DestinationEdit() {
   const [dayErr, setDayErr] = useState<unknown>(null);
   const [savingDays, setSavingDays] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [photoErr, setPhotoErr] = useState<unknown>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,11 +61,30 @@ export default function DestinationEdit() {
     } catch (e) { setDayErr(e); } finally { setSavingDays(false); }
   };
 
+  // "Add by URL": the server downloads the picture and runs it through the same
+  // resize/strip pipeline as an upload, so the app never depends on someone else's site.
+  const importFromUrl = async () => {
+    setPhotoErr(null); setImporting(true);
+    try {
+      await api(`/api/admin/destinations/${id}/images/from-url`, { method: "POST", body: { url: photoUrl.trim() } });
+      setPhotoUrl(""); invalidate("/api/destinations"); toast("Photo added");
+    } catch (e) { setPhotoErr(e); } finally { setImporting(false); }
+  };
+
+  const removePhoto = (img: any, index: number) => confirm({
+    title: "Remove photo", danger: true,
+    summary: [["Destination", d.data.name], ["Photo", index === 0 ? "1 (cover)" : String(index + 1)]],
+    consequence: "Removed from the app straight away. Bookings keep their own itinerary snapshot; no booking is affected.",
+    confirmLabel: "Remove",
+    run: () => api(`/api/admin/destinations/${id}/images/${img.id}`, { method: "DELETE" }).then(() => invalidate("/api/destinations")),
+  });
+
   const upload = async (file: File) => {
     setUploading(true);
     const form = new FormData(); form.append("file", file);
-    try { await api(`/api/admin/destinations/${id}/images`, { form, method: "POST" }); invalidate("/api/destinations"); toast("Image uploaded"); }
-    catch (e) { setError(e); } finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
+    setPhotoErr(null);
+    try { await api(`/api/admin/destinations/${id}/images`, { form, method: "POST" }); invalidate("/api/destinations"); toast("Photo added"); }
+    catch (e) { setPhotoErr(e); } finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
   };
 
   return (
@@ -82,13 +104,27 @@ export default function DestinationEdit() {
               <Button type="submit" busy={formState.isSubmitting}>Save details</Button>
             </form>
           </Card>
-          <Card title="Images" actions={<><input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+          <Card title="Photos" actions={<><input ref={fileRef} type="file" accept="image/jpeg,image/png" className="hidden"
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
             <Button variant="secondary" busy={uploading} onClick={() => fileRef.current?.click()}>Upload</Button></>}>
+            <form className="mb-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (photoUrl.trim()) importFromUrl(); }}>
+              <Input type="url" placeholder="https://… paste a photo address" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} aria-label="Photo URL" />
+              <Button type="submit" variant="secondary" busy={importing} disabled={!photoUrl.trim()}>Add from URL</Button>
+            </form>
+            <div className="mb-3"><ErrorBox error={photoErr} /></div>
             <div className="grid grid-cols-3 gap-2">
-              {d.data.imageUrls?.map((u: string) => <img key={u} src={u} alt="" className="aspect-square w-full rounded-[14px] object-cover" />)}
+              {(d.data.images ?? []).map((img: any, i: number) => (
+                <figure key={img.id} className="group relative">
+                  <img src={img.thumbnailUrl} alt={`Photo ${i + 1}`} className="aspect-square w-full rounded-[14px] object-cover" />
+                  {i === 0 && <span className="absolute left-2 top-2 rounded-full bg-nav/80 px-2 py-0.5 text-xs text-white">Cover</span>}
+                  <button type="button" onClick={() => removePhoto(img, i)} aria-label={`Remove photo ${i + 1}`}
+                    className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-error shadow">Remove</button>
+                </figure>
+              ))}
             </div>
-            {!d.data.imageUrls?.length && <p className="text-sm text-muted">No images yet. Uploads are resized/compressed by the image pipeline.</p>}
+            <p className="mt-3 text-xs text-muted">{(d.data.images ?? []).length
+              ? "The app shows these as a slideshow (5 s per photo); the first one is the cover in Explore. JPEG or PNG, max 10 MB, up to 12 photos."
+              : "No photos yet. Upload a JPEG/PNG or paste a photo URL. Every photo is resized and stripped of location data."}</p>
           </Card>
         </div>
         <Card title="DEFAULT itinerary" actions={<Button busy={savingDays} disabled={!daysValid(days)} onClick={saveDays}>Save itinerary</Button>}>
