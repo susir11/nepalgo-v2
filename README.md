@@ -96,7 +96,7 @@ Secrets (`.env`, JWT keys, Firebase files) are not in the repository. See **[RUN
 ## Testing
 
 - **Unit and integration tests** per service (`.\mvnw.cmd test`), including Testcontainers tests against real PostgreSQL with the real migrations.
-- **End-to-end checks** (Python, run during development, not yet in this repository) drive real flows through the gateway: billing, credits, legal consent, admin, notifications, MFA, account deletion, reviews.
+- **End-to-end suites** ([tests/e2e](tests/e2e)) drive real flows through the gateway and check the resulting database rows, audit entries and e-mails: billing, credits, legal consent, admin, notifications, MFA, account deletion, reviews, payment window, custom itineraries.
 - **Smoke test:** `.\postman\smoke-public.ps1 [-Gateway https://api.example.com]` runs the read-only public API checks with the Postman CLI; it's safe to run right after a deploy.
 - **Flutter:** `flutter analyze` and `flutter test` (widget tests include the photo slideshow timing).
 

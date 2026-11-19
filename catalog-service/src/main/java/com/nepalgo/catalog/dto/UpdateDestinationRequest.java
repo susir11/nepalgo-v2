@@ -7,6 +7,6 @@ import java.math.BigDecimal;
 public record UpdateDestinationRequest(
         String name, String region, String type, String description,
         String bestSeason, java.math.BigDecimal basePriceUsd, String permitNotes,
-        BigDecimal latitude,
-        BigDecimal longitude
+        @jakarta.validation.constraints.DecimalMin("-90") @jakarta.validation.constraints.DecimalMax("90") BigDecimal latitude,
+        @jakarta.validation.constraints.DecimalMin("-180") @jakarta.validation.constraints.DecimalMax("180") BigDecimal longitude
 ) {}

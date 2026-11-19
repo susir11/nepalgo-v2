@@ -7,5 +7,5 @@ import java.util.List;
 
 public record ItineraryVersionRequest(
         @NotNull String tier,
-        @NotEmpty @Valid List<ItineraryDayRequest> days
+        @NotEmpty List<@Valid ItineraryDayRequest> days
 ) {}

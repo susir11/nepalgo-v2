@@ -27,7 +27,8 @@ export default function DestinationEdit() {
   useEffect(() => {
     if (!d.data) return;
     reset({ name: d.data.name, region: d.data.region, type: d.data.type, description: d.data.description,
-      bestSeason: d.data.bestSeason ?? "", basePriceUsd: d.data.basePriceUsd, permitNotes: d.data.permitNotes ?? "" });
+      bestSeason: d.data.bestSeason ?? "", basePriceUsd: d.data.basePriceUsd, permitNotes: d.data.permitNotes ?? "",
+      latitude: d.data.latitude ?? "", longitude: d.data.longitude ?? "" });
     setDays(toDays(d.data.defaultItinerary?.days));
   }, [d.data, reset]);
 
@@ -37,7 +38,8 @@ export default function DestinationEdit() {
   const saveDetails = handleSubmit(async (f) => {
     setError(null);
     try {
-      await api(`/api/admin/destinations/${id}`, { method: "PUT", body: { ...f, basePriceUsd: Number(f.basePriceUsd) } });
+      await api(`/api/admin/destinations/${id}`, { method: "PUT", body: { ...f, basePriceUsd: Number(f.basePriceUsd),
+        latitude: f.latitude === "" ? null : Number(f.latitude), longitude: f.longitude === "" ? null : Number(f.longitude) } });
       invalidate("/api/destinations"); toast("Destination saved");
     } catch (e) { setError(e); }
   });
@@ -100,6 +102,12 @@ export default function DestinationEdit() {
               <div className="grid grid-cols-2 gap-3"><Field label="Base price (USD)"><Input type="number" step="0.01" {...register("basePriceUsd")} /></Field>
                 <Field label="Best season"><Input {...register("bestSeason")} /></Field></div>
               <Field label="Permit notes"><Textarea rows={2} {...register("permitNotes")} /></Field>
+              {/* Weather + map use these. Update is a FULL replace, so they must always be sent back,
+                  or saving the form would erase them. Use the trek's base/start point, not a summit. */}
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Latitude" hint="e.g. 28.0026 (Everest Base Camp)"><Input type="number" step="any" min={-90} max={90} {...register("latitude")} /></Field>
+                <Field label="Longitude" hint="e.g. 86.8528"><Input type="number" step="any" min={-180} max={180} {...register("longitude")} /></Field>
+              </div>
               <ErrorBox error={error} />
               <Button type="submit" busy={formState.isSubmitting}>Save details</Button>
             </form>

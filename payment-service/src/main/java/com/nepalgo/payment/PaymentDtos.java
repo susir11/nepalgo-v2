@@ -53,7 +53,7 @@ public final class PaymentDtos {
             @NotNull Long bookingId,
             @Size(max = 50) String buyerPan,
             @Pattern(regexp = "^https://.+", message = "must be an https:// link") @Size(max = 1000) String payoneerLink,
-            @NotNull @Valid List<LineItemInput> lineItems
+            @NotNull List<@Valid LineItemInput> lineItems
     ) {}
 
     // The ONE edit form (spec: "one Edit button, not two admin concepts").
@@ -62,7 +62,7 @@ public final class PaymentDtos {
     public record UpdateBillRequest(
             @Size(max = 50) String buyerPan,
             @Pattern(regexp = "^https://.+", message = "must be an https:// link") @Size(max = 1000) String payoneerLink,
-            @NotNull @Valid List<LineItemInput> lineItems,
+            @NotNull List<@Valid LineItemInput> lineItems,
             @Size(max = 2000) String reason
     ) {}
 

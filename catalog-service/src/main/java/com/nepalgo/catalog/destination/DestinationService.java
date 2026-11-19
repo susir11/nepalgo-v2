@@ -86,6 +86,7 @@ public class DestinationService {
 
         return new DestinationDetailResponse(d.getId(), d.getName(), d.getRegion(), d.getType(),
                 d.getDescription(), d.getBestSeason(), d.getBasePriceUsd(), d.getPermitNotes(),
-                images.stream().map(DestinationDetailResponse.Image::fullUrl).toList(), defaultItinerary, images);
+                images.stream().map(DestinationDetailResponse.Image::fullUrl).toList(), defaultItinerary, images,
+                d.getLatitude(), d.getLongitude());
     }
 }

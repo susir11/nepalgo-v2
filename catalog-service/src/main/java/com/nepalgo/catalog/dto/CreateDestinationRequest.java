@@ -14,7 +14,7 @@ public record CreateDestinationRequest(
         String bestSeason,
         @NotNull @DecimalMin("0.0") BigDecimal basePriceUsd,
         String permitNotes,
-        BigDecimal latitude,
-        BigDecimal longitude
+        @jakarta.validation.constraints.DecimalMin("-90") @jakarta.validation.constraints.DecimalMax("90") BigDecimal latitude,
+        @jakarta.validation.constraints.DecimalMin("-180") @jakarta.validation.constraints.DecimalMax("180") BigDecimal longitude
 
 ) {}

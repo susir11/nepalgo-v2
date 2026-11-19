@@ -25,7 +25,7 @@ public record CreateManualBookingRequest(
         boolean porterRequested,
         String specialRequestText,
         String internalNotes,
-        @Valid @Size(min = 1, max = 60) List<CustomDay> customItinerary
+        @Size(min = 1, max = 60) List<@Valid CustomDay> customItinerary
 ) {
     /** One day of an ad-hoc itinerary. Day number = position in the list. */
     public record CustomDay(

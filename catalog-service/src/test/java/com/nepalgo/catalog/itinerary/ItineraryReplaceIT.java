@@ -34,11 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Import({ItineraryVersionService.class, ItineraryReplaceIT.Pg.class})
 class ItineraryReplaceIT {
 
-    // Tests don't run main(), so apply the same fix: Windows reports "Asia/Katmandu",
-    // which Postgres rejects as a session TimeZone.
-    static {
-        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("UTC"));
-    }
+    // No time-zone workaround needed: com.nepalgo.catalog.UtcTimeZone (spring.factories) sets UTC on startup.
 
     @TestConfiguration(proxyBeanMethods = false)
     static class Pg {

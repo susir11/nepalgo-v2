@@ -2,6 +2,10 @@ server:
   port: 8081
 
 spring:
+  cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s
   application:
     name: auth-service
   datasource:
@@ -18,6 +22,10 @@ spring:
 
 eureka:
   client:
+    # Fresh service list every 5 s (default 30 s) + load-balancer cache 5 s (default 35 s):
+    # after a service restarts, callers find it within seconds instead of failing
+    # closed for up to a minute. Negligible extra load on Eureka at this scale.
+    registry-fetch-interval-seconds: 5
     service-url:
       defaultZone: http://localhost:8761/eureka
   instance:

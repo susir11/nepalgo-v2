@@ -8,7 +8,9 @@ public record DestinationDetailResponse(
         String bestSeason, BigDecimal basePriceUsd, String permitNotes,
         List<String> imageUrls,          // full-size URLs, cover first (kept for older app builds)
         ItineraryVersionResponse defaultItinerary,
-        List<Image> images               // id + all sizes: app hero uses medium, admin needs ids to remove
+        List<Image> images,              // id + all sizes: app hero uses medium, admin needs ids to remove
+        BigDecimal latitude,             // weather + map point; admin form must round-trip these (update = full replace)
+        BigDecimal longitude
 ) {
     public record Image(Long id, String thumbnailUrl, String mediumUrl, String fullUrl) {}
 }
