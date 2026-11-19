@@ -640,6 +640,32 @@
               }
             }
           ]
+        },
+        {
+          "name": "List destinations while signed in (foreign token must be ignored)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer this-is-a-customer-token-not-a-staff-one"
+              }
+            ],
+            "url": "{{catalogUrl}}/api/destinations?page=0&size=5",
+            "description": "Regression guard (2026-11-19): the app sends the CUSTOMER token on every request once logged in. Catalog only knows the staff key, and Spring validates any Bearer header even on permitAll routes, so Explore returned 401 for every signed-in user. The public catalogue must ignore tokens."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('public catalogue ignores a token it cannot verify (200, not 401)', () => pm.response.to.have.status(200));",
+                  "pm.test('still returns destinations', () => pm.expect(pm.response.json().content).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
         }
       ],
       "auth": {
