@@ -26,5 +26,7 @@ $adb = Join-Path $env:LOCALAPPDATA 'Android\Sdk\platform-tools\adb.exe'
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $adb install -r build\app\outputs\flutter-apk\app-debug.apk
 if ($Fresh) { & $adb shell pm clear com.nepalgo.app }
-& $adb shell monkey -p com.nepalgo.app -c android.intent.category.LAUNCHER 1 | Out-Null
+# monkey prints its args to stderr; Windows PowerShell 5.1 + 'Stop' would treat that as a failure.
+$ErrorActionPreference = 'Continue'
+& $adb shell monkey -p com.nepalgo.app -c android.intent.category.LAUNCHER 1 2>$null | Out-Null
 Write-Host "NepalGo installed and launched (API_BASE=$($cfg.API_BASE))."
