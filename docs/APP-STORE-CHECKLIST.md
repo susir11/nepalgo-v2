@@ -11,10 +11,13 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 ## ⚠️ Before first build
 
 - [ ] **Android Studio + SDK** installed; `flutter doctor` green for Android. Xcode on a Mac for iOS.
-- [ ] App id / bundle id: `com.nepalgo.app` (Android `applicationId`, iOS `PRODUCT_BUNDLE_IDENTIFIER`) — currently the Flutter default `com.nepalgo.nepalgo`.
-- [ ] App name "NepalGo", launcher icons + splash (use `flutter_launcher_icons` / `flutter_native_splash` with brand colours).
+- [x] App id / bundle id `com.nepalgo.app` (Android `applicationId` + namespace, iOS `PRODUCT_BUNDLE_IDENTIFIER`). Permanent after the first upload.
+- [x] App name "NepalGo" (Android label, iOS display name, web manifest). Brand launcher icons (incl. Android adaptive) + native splash in theme green: source images from `mobile-app/tool/make_brand_icons.py`, regenerate with `dart run flutter_launcher_icons` and `dart run flutter_native_splash:create`.
+- [x] iOS `Info.plist`: photo-library + camera usage texts (image_picker crashes without them), `ITSAppUsesNonExemptEncryption = NO`.
 - [ ] Versioning: `pubspec.yaml` `version: 1.0.0+1` — bump the build number for every upload.
-- [ ] **Release signing**: Android upload keystore (store it in a password manager, NOT the repo; enable Play App Signing). iOS distribution certificate + provisioning profile.
+- [ ] **Release signing**: Gradle is wired to `android/key.properties` (gitignored; falls back to the debug key when absent, which Play rejects). Create the upload key once and keep the `.jks` + passwords in a password manager, outside the repo:
+  `keytool -genkey -v -keystore C:/keys/nepalgo-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`
+  then `android/key.properties`: `storePassword=…`, `keyPassword=…`, `keyAlias=upload`, `storeFile=C:/keys/nepalgo-upload.jks`; build with `flutter build appbundle`. Enable Play App Signing. iOS: distribution certificate + provisioning profile (needs a Mac).
 - [ ] `API_BASE` and `FIREBASE_API_KEY` passed with `--dart-define` for the production build; production Firebase project.
 - [ ] Android `targetSdk` = current Play requirement; iOS minimum version decided.
 - [ ] FlutterFire: `google-services.json` (Android) + `GoogleService-Info.plist` (iOS) for push (FCM/APNs key uploaded to Firebase) and social login.

@@ -1,11 +1,29 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ---- Release signing ----
+// The upload keystore + its passwords live OUTSIDE git (android/key.properties and *.jks are
+// gitignored). Think of it like a bank's HSM signing key: whoever holds it can publish
+// "official" updates of the app, so it goes in a password manager, never in the repo.
+// android/key.properties format:
+//   storePassword=...
+//   keyPassword=...
+//   keyAlias=upload
+//   storeFile=C:/path/outside/repo/nepalgo-upload.jks
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
-    namespace = "com.nepalgo.nepalgo"
+    namespace = "com.nepalgo.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,8 +33,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.nepalgo.nepalgo"
+        // Permanent store identity: can never change after the first Play upload.
+        applicationId = "com.nepalgo.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -29,11 +47,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Real upload key when key.properties exists; otherwise fall back to the debug key so
+            // `flutter run --release` still works locally. A debug-signed bundle is rejected by Play,
+            // so a forgotten key.properties can't accidentally ship.
+            signingConfig = if (keystorePropertiesFile.exists())
+                signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }
