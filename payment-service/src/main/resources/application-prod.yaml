@@ -30,4 +30,5 @@ nepalgo:
   internal:
     api-key: ${INTERNAL_API_KEY}   # shared service-to-service secret (no dev fallback in prod)
   storage:
-    endpoint: ${S3_ENDPOINT}       # presigned receipt links are signed for this host: must be reachable by admins
+    endpoint: ${S3_ENDPOINT}                 # how payment-service reaches storage (internal network)
+    public-endpoint: ${S3_PUBLIC_ENDPOINT}   # host in presigned receipt links: must be reachable by admins' browsers

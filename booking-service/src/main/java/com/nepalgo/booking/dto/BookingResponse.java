@@ -11,5 +11,6 @@ public record BookingResponse(
         String invoiceNumber,      // non-null once the bill is issued (customer can fetch it from payment-service)
         String rejectionReason,    // shown to the customer after a rejection / payment kick-back (spec 8, Step 4)
         Long destinationId,
-        String itinerarySnapshot   // JSON of the EXACT itinerary booked (Final Itinerary Review shows this, not today's catalog)
+        String itinerarySnapshot,  // JSON of the EXACT itinerary booked (Final Itinerary Review shows this, not today's catalog)
+        Instant paymentDueAt       // AWAITING_PAYMENT with an issued bill only; null = no deadline running (or not known yet)
 ) {}

@@ -19,7 +19,7 @@ COPY --from=extract /build/extracted/application/ ./
 COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 USER app
 # Checked by docker-entrypoint.sh before the JVM starts.
-ENV REQUIRED_ENV="DB_URL DB_USERNAME DB_PASSWORD EUREKA_URL INTERNAL_API_KEY JWT_STAFF_PUBLIC_KEY_PATH JWT_CUSTOMER_PUBLIC_KEY_PATH RUSTFS_ACCESS_KEY RUSTFS_SECRET_KEY S3_ENDPOINT"
+ENV REQUIRED_ENV="DB_URL DB_USERNAME DB_PASSWORD EUREKA_URL INTERNAL_API_KEY JWT_STAFF_PUBLIC_KEY_PATH JWT_CUSTOMER_PUBLIC_KEY_PATH RUSTFS_ACCESS_KEY RUSTFS_SECRET_KEY S3_ENDPOINT S3_PUBLIC_ENDPOINT"
 # Heap sized from the CONTAINER memory limit, not the host's RAM; crash fast on
 # OOM so the platform restarts a clean instance instead of limping along.
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"     SPRING_PROFILES_ACTIVE=prod

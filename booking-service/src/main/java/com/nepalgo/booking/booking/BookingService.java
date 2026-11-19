@@ -40,6 +40,7 @@ public class BookingService {
     private final LegalClient legalClient;
     private final AuthClient authClient;
     private final NotificationPublisher notifications;
+    private final PaymentDeadline paymentDeadline;
 
     @Transactional
     public BookingResponse create(Long customerId, CreateBookingRequest request) {
@@ -114,7 +115,8 @@ public class BookingService {
                 b.getPartySize(), b.getArrivalDate(), b.getDurationDays(), b.isGuideRequested(), b.isPorterRequested(),
                 b.getSpecialRequestText(), b.getLeadBookerLegalName(), b.getLeadBookerPassportNumber(), b.getLeadBookerEmail(),
                 b.getPaymentReceiptId(), b.getPaymentReceiptCode(), b.getRejectionReason(),
-                b.getInternalNotes(), b.getCancellationTier(), b.getCancellationRefundPercent(), b.getCreatedAt());
+                b.getInternalNotes(), b.getCancellationTier(), b.getCancellationRefundPercent(), b.getCreatedAt(),
+                paymentDeadline.dueAt(b));
     }
 
     private void logAudit(Long adminUserId, String actionType, Long bookingId, Long customerId, String details) {
@@ -145,7 +147,8 @@ public class BookingService {
         return new BookingResponse(b.getId(), b.getVoucherCode(), b.getStatus().name(),
                 b.getDestinationNameSnapshot(), b.getPartySize(), b.getArrivalDate(), b.getDurationDays(),
                 b.isGuideRequested(), b.isPorterRequested(), b.getSpecialRequestText(), b.getCreatedAt(),
-                b.getInvoiceNumber(), b.getRejectionReason(), b.getDestinationId(), b.getItinerarySnapshot());
+                b.getInvoiceNumber(), b.getRejectionReason(), b.getDestinationId(), b.getItinerarySnapshot(),
+                paymentDeadline.dueAt(b));
     }
 
     // "Approve & Issue Bill" (spec 8, Step 2). Order matters:

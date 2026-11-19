@@ -13,6 +13,7 @@ public class BookingExpiryJob {
     private static final Logger log = LoggerFactory.getLogger(BookingExpiryJob.class);
     private final BookingService bookingService;
     private final com.nepalgo.booking.client.PaymentClient paymentClient;
+    private final PaymentDeadline paymentDeadline;
 
     // fixedDelay (not fixedRate): the next run starts 60s AFTER the previous
     // one finishes, so a slow run can never overlap itself.
@@ -28,6 +29,7 @@ public class BookingExpiryJob {
             log.warn("Expiry check skipped: payment window unavailable ({})", e.getMessage());
             return;
         }
+        paymentDeadline.update(windowHours);   // customer "pay by" times use the same value
         int expired = bookingService.expireOverdueBookings(windowHours);
         if (expired > 0) {
             log.info("Expired {} booking(s) past the payment window", expired);

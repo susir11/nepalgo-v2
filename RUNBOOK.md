@@ -54,6 +54,7 @@ Needs ~5 GB RAM free. Every container uses the **prod** profile: missing configu
 | `OPENWEATHERMAP_API_KEY` | catalog | |
 | `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`, `S3_ENDPOINT` | catalog, payment | Any S3-compatible store. Receipts bucket must be **private**. |
 | `S3_PUBLIC_URL_BASE` | catalog | CDN URL in front of the public images bucket |
+| `S3_PUBLIC_ENDPOINT` | payment | Host put into presigned receipt links (what admins' browsers open, e.g. `https://files.example.com`). If a reverse proxy sits in front of the store it must pass the original `Host` header through, or the signature check fails. |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL_FROM`, `OPS_ALERT_EMAIL` | notification | Transactional mail provider (SES, Postmark, …) |
 | `IN_APP_SUPPORT_CHAT_ENABLED` | support | Feature flag, default `false` |
 
@@ -111,7 +112,7 @@ Recommended starting point (verify pricing first): **Google Cloud Run** or **AWS
 | Admin lost their phone (MFA) | — | Another SUPER_ADMIN: Admin team → Reset 2-step. The admin re-enrols at next login (mandatory for SUPER_ADMIN). |
 | Only one SUPER_ADMIN and they lost MFA | — | DB: `UPDATE auth.staff_users SET mfa_enabled=false, totp_secret_encrypted=NULL WHERE email='…';` then they enrol at next login. Log the reason. |
 | Terms published by mistake | Published versions can't be edited/deleted | Publish a corrected new version; customers mid-checkout simply re-agree |
-| Image/receipt links broken | S3 endpoint/credentials | Check `S3_ENDPOINT`; receipt links are presigned for 5 minutes by design |
+| Image/receipt links broken | S3 endpoint/credentials | Check `S3_ENDPOINT`; receipt links use `S3_PUBLIC_ENDPOINT` (browser-reachable host) and expire after 5 minutes by design. `SignatureDoesNotMatch` = proxy changed the Host header |
 
 ## 9. Before go-live checklist
 

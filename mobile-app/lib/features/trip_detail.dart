@@ -172,9 +172,16 @@ class _AwaitingPaymentState extends ConsumerState<_AwaitingPayment> {
       error: (e, _) => ErrorView(e, onRetry: () => ref.invalidate(billProvider(b['id'] as int))),
       data: (bl) {
         if (bl == null) return const NgCard(child: Text('Your bill is almost ready. Pull down to refresh in a moment.'));
+        final due = DateTime.tryParse(b['paymentDueAt'] as String? ?? '');
         // Sub-screen 1: Final Itinerary Review (a navigation gate, not a legal consent).
-        if (!_agreedItinerary) return _ItineraryReview(b: b, bill: bl, onAgree: () => setState(() => _agreedItinerary = true));
+        if (!_agreedItinerary) {
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            if (due != null) ...[_PaymentDueBanner(due: due), const SizedBox(height: 12)],
+            _ItineraryReview(b: b, bill: bl, onAgree: () => setState(() => _agreedItinerary = true)),
+          ]);
+        }
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          if (due != null) ...[_PaymentDueBanner(due: due), const SizedBox(height: 12)],
           _BillCard(bill: bl),
           const SectionTitle('Lead booker'),
           _IdentityForm(bookingId: b['id'] as int, onSaved: () => setState(() => _identitySaved = true), saved: _identitySaved),
@@ -199,6 +206,27 @@ class _AwaitingPaymentState extends ConsumerState<_AwaitingPayment> {
           _WithdrawButton(b: b, onChanged: widget.onChanged),
         ]);
       },
+    );
+  }
+}
+
+/// Deadline from the server (bill issued + Billing Settings payment window).
+/// Turns warning-coloured in the last 6 hours.
+class _PaymentDueBanner extends StatelessWidget {
+  final DateTime due;
+  const _PaymentDueBanner({required this.due});
+  @override
+  Widget build(BuildContext context) {
+    final (text, urgent) = paymentDueLabel(due, DateTime.now());
+    final fg = urgent ? context.ng.warning : context.ng.ink;
+    return NgCard(
+      color: urgent ? context.ng.warning.withValues(alpha: .12) : context.ng.primaryTint,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(children: [
+        Icon(Icons.schedule_rounded, color: fg),
+        const SizedBox(width: 12),
+        Expanded(child: Text(text, style: TextStyle(color: fg, fontWeight: FontWeight.w600))),
+      ]),
     );
   }
 }

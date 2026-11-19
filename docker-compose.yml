@@ -177,6 +177,7 @@ services:
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
       S3_ENDPOINT: http://rustfs:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000   # receipt links open in the admin's browser, not inside Docker
     volumes: [ "./secrets:/app/secrets:ro" ]
     depends_on: [ postgres, eureka-server, rustfs ]
     mem_limit: 420m

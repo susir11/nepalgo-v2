@@ -37,4 +37,24 @@ void main() {
       expect(StatusPill.label('VERIFYING_PAYMENT'), 'Payment under verification');
     });
   });
+
+  group('payment due label', () {
+    final now = DateTime.utc(2026, 11, 19, 8);
+    test('more than a day: calm reminder', () {
+      final (t, urgent) = paymentDueLabel(now.add(const Duration(hours: 48)), now);
+      expect(t, startsWith('Please pay and upload your receipt by'));
+      expect(urgent, isFalse);
+    });
+    test('under a day: hours left, urgent under 6 h', () {
+      expect(paymentDueLabel(now.add(const Duration(hours: 10)), now).$1, startsWith('10 h left'));
+      expect(paymentDueLabel(now.add(const Duration(hours: 10)), now).$2, isFalse);
+      expect(paymentDueLabel(now.add(const Duration(hours: 5)), now).$2, isTrue);
+    });
+    test('last hour and overdue', () {
+      expect(paymentDueLabel(now.add(const Duration(minutes: 20)), now).$1, startsWith('Less than an hour left'));
+      final (t, urgent) = paymentDueLabel(now.subtract(const Duration(minutes: 1)), now);
+      expect(t, contains('has passed'));
+      expect(urgent, isTrue);
+    });
+  });
 }

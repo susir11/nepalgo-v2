@@ -182,6 +182,13 @@ export default function BookingDetail() {
               ["Email", customer.data?.email], ["Account", customer.data && <StatusBadge status={customer.data.status} />]]} />
             <Link className="mt-3 inline-block text-sm font-semibold text-primary" to={`/customers/${b.customerId}`}>Open customer →</Link>
           </Card>
+          {b.paymentDueAt && (
+            <Card title="Payment window">
+              {/* Same deadline the customer sees; expires automatically after it (Billing Settings > Payment window). */}
+              <KeyValue items={[["Customer must pay by", <b>{dateTime(b.paymentDueAt)}</b>],
+                ["Status", new Date(b.paymentDueAt).getTime() < Date.now() ? <Badge tone="error">Overdue: expires on the next check</Badge> : <Badge tone="warning">Running</Badge>]]} />
+            </Card>
+          )}
           <Card title="Requests to review">
             <KeyValue items={[["Guide", b.guideRequested ? <Badge tone="brand">Requested</Badge> : "No"], ["Porter", b.porterRequested ? <Badge tone="brand">Requested</Badge> : "No"],
               ["Special request", b.specialRequestText || "—"]]} />

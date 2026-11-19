@@ -14,5 +14,6 @@ public record AdminBookingDetailResponse(
         Long paymentReceiptId,          // image itself: GET payment-service /api/admin/receipts?bookingId= (presigned link)
         String paymentReceiptCode,
         String rejectionReason, String internalNotes,
-        String cancellationTier, BigDecimal cancellationRefundPercent, Instant createdAt
+        String cancellationTier, BigDecimal cancellationRefundPercent, Instant createdAt,
+        Instant paymentDueAt
 ) {}

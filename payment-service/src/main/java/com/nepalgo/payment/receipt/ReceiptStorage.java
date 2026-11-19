@@ -33,7 +33,15 @@ public class ReceiptStorage implements ApplicationRunner {
     private final S3Presigner presigner;
     private final String bucket;
 
+    // Two addresses for the same store, like a bank's internal clearing network vs.
+    // the public online-banking URL:
+    //  - endpoint:        how THIS service reaches storage (in Docker: http://rustfs:9000)
+    //  - public-endpoint: the host baked into presigned links that an admin's BROWSER
+    //                     opens (e.g. https://files.example.com). SigV4 signs the Host,
+    //                     so a link signed for the internal name can't simply be rewritten.
+    //                     Defaults to endpoint, which is right for local dev.
     public ReceiptStorage(@Value("${nepalgo.storage.endpoint}") String endpoint,
+                          @Value("${nepalgo.storage.public-endpoint:${nepalgo.storage.endpoint}}") String publicEndpoint,
                           @Value("${nepalgo.storage.access-key}") String accessKey,
                           @Value("${nepalgo.storage.secret-key}") String secretKey,
                           @Value("${nepalgo.storage.receipts-bucket}") String bucket) {
@@ -42,7 +50,7 @@ public class ReceiptStorage implements ApplicationRunner {
         var pathStyle = S3Configuration.builder().pathStyleAccessEnabled(true).build();
         this.s3 = S3Client.builder().endpointOverride(URI.create(endpoint)).region(Region.US_EAST_1)
                 .serviceConfiguration(pathStyle).credentialsProvider(creds).build();
-        this.presigner = S3Presigner.builder().endpointOverride(URI.create(endpoint)).region(Region.US_EAST_1)
+        this.presigner = S3Presigner.builder().endpointOverride(URI.create(publicEndpoint)).region(Region.US_EAST_1)
                 .serviceConfiguration(pathStyle).credentialsProvider(creds).build();
         this.bucket = bucket;
     }
