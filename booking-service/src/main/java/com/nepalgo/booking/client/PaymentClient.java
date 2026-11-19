@@ -103,6 +103,24 @@ public class PaymentClient {
                 .body(StoredReceipt.class));
     }
 
+    /**
+     * Current payment window from Billing Settings (payment-service owns it, spec 15).
+     * Throws PaymentUnavailableException if payment-service can't answer; the
+     * expiry job then skips that run instead of guessing a value.
+     */
+    public int paymentWindowHours() {
+        Map<?, ?> r = exchange("/internal/settings/payment-window", () -> loadBalancedRestClientBuilder.build()
+                .get()
+                .uri("http://payment-service/internal/settings/payment-window")
+                .header(HEADER, internalApiKey)
+                .retrieve()
+                .body(Map.class));
+        if (r == null || !(r.get("paymentWindowHours") instanceof Number n) || n.intValue() < 1) {
+            throw new PaymentUnavailableException("payment-service returned no payment window", null);
+        }
+        return n.intValue();
+    }
+
     private BillStatus post(String path, Map<String, Object> body) {
         return exchange(path, () -> loadBalancedRestClientBuilder.build()
                 .post()

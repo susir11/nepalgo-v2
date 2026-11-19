@@ -37,6 +37,10 @@ public class BillingSettings {
     @Column(name = "seller_address", nullable = false, columnDefinition = "TEXT")
     private String sellerAddress;
 
+    // How long AWAITING_PAYMENT lasts before booking-service expires it (spec 8 / 15).
+    @Column(name = "payment_window_hours", nullable = false)
+    private int paymentWindowHours;
+
     @Column(name = "updated_by")
     private Long updatedBy;
 

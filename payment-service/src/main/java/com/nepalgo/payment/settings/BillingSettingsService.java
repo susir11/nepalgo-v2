@@ -29,12 +29,15 @@ public class BillingSettingsService {
         s.setSellerLegalName(r.sellerLegalName());
         s.setSellerPanVatNumber(r.sellerPanVatNumber());
         s.setSellerAddress(r.sellerAddress());
+        // Optional in the request so older clients keep working: null = unchanged.
+        if (r.paymentWindowHours() != null) s.setPaymentWindowHours(r.paymentWindowHours());
         s.setUpdatedBy(adminId);
         repository.save(s);
 
         auditService.log(adminId, "BILLING_SETTINGS_UPDATED", "BILLING_SETTINGS", (long) ROW_ID,
                 "vatRegistered=" + r.vatRegistered() + ", vatPercent=" + r.vatPercent()
-                        + ", serviceChargePercent=" + r.serviceChargePercent());
+                        + ", serviceChargePercent=" + r.serviceChargePercent()
+                        + ", paymentWindowHours=" + s.getPaymentWindowHours());
         return s;
     }
 }

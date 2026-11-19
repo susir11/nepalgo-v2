@@ -32,10 +32,12 @@ function Settings({ canEdit }: { canEdit: boolean }) {
   const submit = handleSubmit((f) => confirm({
     title: "Change billing settings",
     summary: [["VAT registered", f.vatRegistered ? `Yes — ${f.vatPercent}% (Tax Invoice format)` : "No (PAN-style invoice)"],
-      ["Service charge", `${f.serviceChargePercent}%`], ["Seller", f.sellerLegalName], ["PAN/VAT no.", f.sellerPanVatNumber]],
-    consequence: "Every bill CREATED after this uses the new values. Bills that already exist are never changed.",
+      ["Service charge", `${f.serviceChargePercent}%`], ["Payment window", `${f.paymentWindowHours} hours`],
+      ["Seller", f.sellerLegalName], ["PAN/VAT no.", f.sellerPanVatNumber]],
+    consequence: "Every bill CREATED after this uses the new values. Bills that already exist are never changed. "
+      + "The payment window applies immediately to every booking waiting for payment (it counts from when the bill was issued).",
     confirmLabel: "Save settings",
-    run: () => api("/api/admin/billing-settings", { method: "PUT", body: { ...f, vatPercent: Number(f.vatPercent), serviceChargePercent: Number(f.serviceChargePercent) } })
+    run: () => api("/api/admin/billing-settings", { method: "PUT", body: { ...f, vatPercent: Number(f.vatPercent), serviceChargePercent: Number(f.serviceChargePercent), paymentWindowHours: Number(f.paymentWindowHours) } })
       .then(() => invalidate("/api/admin/billing-settings")),
   }));
   if (s.isLoading) return <Card title="Billing & company settings"><Loading /></Card>;
@@ -52,6 +54,9 @@ function Settings({ canEdit }: { canEdit: boolean }) {
             <Field label="VAT %"><Input type="number" step="0.01" disabled={!vat} {...register("vatPercent")} /></Field>
             <Field label="Service charge %"><Input type="number" step="0.01" {...register("serviceChargePercent")} /></Field>
           </div>
+          <Field label="Payment window (hours)" hint="How long a customer has to pay and upload the receipt before the booking expires. 1–336 (14 days).">
+            <Input type="number" min={1} max={336} step={1} {...register("paymentWindowHours", { required: true, min: 1, max: 336 })} />
+          </Field>
           <Field label="Seller legal name"><Input {...register("sellerLegalName", { required: true })} /></Field>
           <Field label="PAN / VAT number"><Input {...register("sellerPanVatNumber", { required: true })} /></Field>
           <Field label="Registered address"><Textarea rows={2} {...register("sellerAddress", { required: true })} /></Field>

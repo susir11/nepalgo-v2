@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 
 import com.nepalgo.booking.booking.CancellationTierCalculator.TierResult;
 
-import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -512,14 +511,11 @@ public class BookingService {
                 new BigDecimal("100.00"), money.cashRefundUsd(), money.creditCode(), money.creditUsd());
     }
 
-    // Spec section 8 / settings: payment_window_hours is a named, configurable
-// value (48 as a sensible default). Field injection via @Value sits fine
-// alongside Lombok's constructor injection for the final fields.
-    @Value("${nepalgo.booking.payment-window-hours:48}")
-    private long paymentWindowHours;
-
+    // Spec section 8 / 15: payment_window_hours is a staff-editable value in
+    // Billing Settings (payment-service). BookingExpiryJob fetches it BEFORE
+    // opening this transaction, so no HTTP call happens while DB locks are held.
     @Transactional
-    public int expireOverdueBookings() {
+    public int expireOverdueBookings(long paymentWindowHours) {
         Instant cutoff = Instant.now().minus(Duration.ofHours(paymentWindowHours));
         // Only bookings whose bill was issued: a manual booking still being priced
         // has nothing to pay yet, so its window hasn't started.

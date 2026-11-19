@@ -26,4 +26,20 @@ public class BillingSettingsAdminController {
         Long adminId = Long.parseLong(jwt.getSubject());
         return ResponseEntity.ok(PaymentDtos.BillingSettingsResponse.from(service.update(adminId, request)));
     }
+
+    /**
+     * Service-to-service read for booking-service's expiry job. Lives under
+     * /internal/** (X-Internal-Api-Key chain), never routed by the gateway.
+     */
+    @RestController
+    @RequestMapping("/internal/settings")
+    @RequiredArgsConstructor
+    public static class Internal {
+        private final BillingSettingsService service;
+
+        @GetMapping("/payment-window")
+        public java.util.Map<String, Integer> paymentWindow() {
+            return java.util.Map.of("paymentWindowHours", service.get().getPaymentWindowHours());
+        }
+    }
 }

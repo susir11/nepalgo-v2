@@ -40,8 +40,7 @@ nepalgo:
     staff:
       public-key-path: ${JWT_STAFF_PUBLIC_KEY_PATH}
 
-  booking:
-    payment-window-hours: 48
+  # payment window: Billing Settings in payment-service (admin > Billing), not here.
 
   flags:
     # Spec 20 registry: dormant capability, built but OFF.

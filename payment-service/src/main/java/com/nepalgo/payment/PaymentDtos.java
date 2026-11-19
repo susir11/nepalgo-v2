@@ -1,5 +1,6 @@
 package com.nepalgo.payment;
 
+import jakarta.validation.constraints.Max;
 import com.nepalgo.payment.bill.BillCalculator;
 import com.nepalgo.payment.bill.BillLineItem;
 import com.nepalgo.payment.fx.FxRate;
@@ -104,17 +105,18 @@ public final class PaymentDtos {
             @NotNull @DecimalMin("0.0") @DecimalMax("100.0") BigDecimal serviceChargePercent,
             @NotBlank String sellerLegalName,
             @NotBlank String sellerPanVatNumber,
-            @NotBlank String sellerAddress
+            @NotBlank String sellerAddress,
+            @Min(1) @Max(336) Integer paymentWindowHours   // null = keep current value
     ) {}
 
     public record BillingSettingsResponse(boolean vatRegistered, BigDecimal vatPercent,
                                           BigDecimal serviceChargePercent, String sellerLegalName,
                                           String sellerPanVatNumber, String sellerAddress,
-                                          Long updatedBy, Instant updatedAt) {
+                                          int paymentWindowHours, Long updatedBy, Instant updatedAt) {
         public static BillingSettingsResponse from(BillingSettings s) {
             return new BillingSettingsResponse(s.isVatRegistered(), s.getVatPercent(), s.getServiceChargePercent(),
                     s.getSellerLegalName(), s.getSellerPanVatNumber(), s.getSellerAddress(),
-                    s.getUpdatedBy(), s.getUpdatedAt());
+                    s.getPaymentWindowHours(), s.getUpdatedBy(), s.getUpdatedAt());
         }
     }
 }
