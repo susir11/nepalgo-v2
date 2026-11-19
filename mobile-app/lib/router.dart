@@ -53,7 +53,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (auth == AuthStatus.unknown) return loc == '/splash' ? null : '/splash';
       if (auth == AuthStatus.signedOut) {
         if (!seen) return loc == '/onboarding' ? null : '/onboarding';
-        return authPages.contains(loc) || loc == '/onboarding' ? null : '/login';
+        // Onboarding finished: "Get Started" flips `seen`, the refresh re-runs this redirect,
+        // and /onboarding must NOT be an allowed stop here — otherwise the user is stuck on it.
+        return authPages.contains(loc) ? null : '/login';
       }
       // signed in
       if (loc == '/splash' || loc == '/onboarding' || authPages.contains(loc)) return '/explore';
