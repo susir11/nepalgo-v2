@@ -25,6 +25,9 @@ Status legend: ✅ done · ⚠️ needs work · ❌ blocker for store review. Re
 - [ ] Add the **upload key** and **Play App Signing** SHA-1/SHA-256 to the Firebase Android app, or Google sign-in fails in Play builds (only the debug key is registered now).
 - [x] FCM device token registered after login when notifications are allowed; permission asked after the first trip request; un-registered on sign-out; tapping a push opens that trip.
 
+- [x] Store listing prepared: texts, 512 px icon, feature graphic, review-notes template in [`store-listing/`](store-listing/README.md). Screenshots still to capture (after replacing the Everest cover photo).
+- [x] `mobile-app\build-android.ps1 -Release` builds the store bundle from `dart_defines.prod.json` and refuses emulator/http APIs, a missing `key.properties` or a debug signature.
+
 ## Permissions (only what we use)
 
 | Permission | Where | Usage text (iOS `Info.plist` / Play declaration) |
