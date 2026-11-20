@@ -7,7 +7,7 @@ import { Badge, Button, Card, Empty, ErrorBox, Loading, PageHeader } from "../co
 // Admin in-app alerts (spec 19: "customer uploads payment receipt -> admin
 // in-app alert / email"). Same rows notification-service e-mails to ops.
 export default function Alerts() {
-  const alerts = useGet<any>("/api/admin/notifications");
+  const alerts = useGet<any>("/api/admin/notifications", { refreshMs: 30_000 });
   const invalidate = useInvalidate();
   const read = (id: number) => api(`/api/admin/notifications/${id}/read`, { body: {} }).then(() => invalidate("/api/admin/notifications"));
   return (

@@ -87,6 +87,10 @@ public class BookingService {
 
         bookingRepository.save(booking);
         logAudit(null, "BOOKING_CREATED", booking.getId(), customerId, null);
+        // Staff alert: a customer is now waiting on us (availability check + pricing).
+        notifications.publish("TRIP_REQUESTED", "TRIP_REQUESTED:booking:" + booking.getId(), customerId, booking.getId(),
+                alertData(booking, "partySize", booking.getPartySize(), "guide", booking.isGuideRequested(),
+                        "porter", booking.isPorterRequested()));
 
         return toResponse(booking);
     }
@@ -142,6 +146,18 @@ public class BookingService {
         }
 
         auditLogRepository.save(log);
+    }
+
+    /** Common alert fields + extra key/value pairs; null values are skipped (Map.of rejects nulls). */
+    private static java.util.Map<String, Object> alertData(Booking b, Object... extra) {
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("destinationName", b.getDestinationNameSnapshot());
+        m.put("voucherCode", b.getVoucherCode());
+        m.put("arrivalDate", b.getArrivalDate().toString());
+        for (int i = 0; i + 1 < extra.length; i += 2) {
+            if (extra[i + 1] != null) m.put((String) extra[i], extra[i + 1]);
+        }
+        return m;
     }
 
     private BookingResponse toResponse(Booking b) {
@@ -484,6 +500,8 @@ public class BookingService {
         bookingRepository.save(booking);
         paymentClient.releaseCreditsQuietly(bookingId);
         logAudit(null, "BOOKING_WITHDRAWN", bookingId, customerId, null);
+        notifications.publish("BOOKING_WITHDRAWN", "BOOKING_WITHDRAWN:booking:" + bookingId, customerId, bookingId,
+                alertData(booking));
         return toResponse(booking);
     }
 
@@ -504,6 +522,8 @@ public class BookingService {
 
         logAudit(null, "BOOKING_CANCELLED_TIERED", bookingId, customerId, tier.tier()
                 + " cash $" + money.cashRefundUsd() + ", credit $" + money.creditUsd());
+        notifications.publish("BOOKING_CANCELLED", "BOOKING_CANCELLED:booking:" + bookingId, customerId, bookingId,
+                alertData(booking, "tier", tier.tier(), "cashRefundUsd", money.cashRefundUsd(), "creditUsd", money.creditUsd()));
         return new CancelBookingResponse(booking.getId(), booking.getStatus().name(), tier.tier(), tier.refundPercent(),
                 money.cashRefundUsd(), money.creditCode(), money.creditUsd());
     }

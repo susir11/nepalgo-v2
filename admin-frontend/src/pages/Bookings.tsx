@@ -17,7 +17,7 @@ export default function Bookings() {
     if (k !== "page") next.delete("page");
     setParams(next);
   };
-  const list = useGet<any>(`/api/admin/bookings?${qs({ ...f, size: 20, sort: f.sort ?? "urgency" })}`);
+  const list = useGet<any>(`/api/admin/bookings?${qs({ ...f, size: 20, sort: f.sort ?? "urgency" })}`, { refreshMs: 30_000 });
   const dests = useGet<any>("/api/destinations?size=100");
 
   return (

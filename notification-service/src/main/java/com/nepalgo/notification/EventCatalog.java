@@ -14,22 +14,29 @@ public final class EventCatalog {
 
     public record Template(Notification.Audience audience, List<Delivery.Channel> channels, boolean attachInvoice) {}
 
-    public static final Map<String, Template> EVENTS = Map.of(
+    // Map.ofEntries (not Map.of): Map.of stops at 10 pairs.
+    public static final Map<String, Template> EVENTS = Map.ofEntries(
             // Admin approves & issues bill -> customer push
-            "BILL_ISSUED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false),
+            Map.entry("BILL_ISSUED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false)),
             // Booking created manually (8b) -> customer push "bill is ready"
-            "MANUAL_BOOKING_BILL_READY", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false),
+            Map.entry("MANUAL_BOOKING_BILL_READY", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false)),
             // Customer uploads receipt -> admin in-app alert + email
-            "RECEIPT_SUBMITTED", new Template(Notification.Audience.ADMIN, List.of(Delivery.Channel.EMAIL), false),
+            Map.entry("RECEIPT_SUBMITTED", new Template(Notification.Audience.ADMIN, List.of(Delivery.Channel.EMAIL), false)),
             // Payment verified -> customer push + email WITH invoice PDF
-            "PAYMENT_VERIFIED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), true),
+            Map.entry("PAYMENT_VERIFIED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), true)),
             // Receipt rejected -> customer push
-            "PAYMENT_REJECTED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false),
+            Map.entry("PAYMENT_REJECTED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false)),
             // Booking rejected (Step 1) -> customer push
-            "BOOKING_REJECTED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false),
+            Map.entry("BOOKING_REJECTED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH), false)),
             // Cash refund sent / travel credit issued -> customer push + email
-            "REFUND_SENT", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), false),
-            "CREDIT_ISSUED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), false));
+            Map.entry("REFUND_SENT", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), false)),
+            Map.entry("CREDIT_ISSUED", new Template(Notification.Audience.CUSTOMER, List.of(Delivery.Channel.PUSH, Delivery.Channel.EMAIL), false)),
+            // Customer actions staff must react to -> admin IN-APP alert only (Alerts page + nav badge).
+            // No channels = no e-mail/push delivery: the notification row itself is the alert, like a
+            // case landing in the operations queue rather than a page to someone's phone.
+            Map.entry("TRIP_REQUESTED", new Template(Notification.Audience.ADMIN, List.of(), false)),
+            Map.entry("BOOKING_WITHDRAWN", new Template(Notification.Audience.ADMIN, List.of(), false)),
+            Map.entry("BOOKING_CANCELLED", new Template(Notification.Audience.ADMIN, List.of(), false)));
 
     // Customer-facing copy. Amounts are always USD (spec 21 display rule).
     public static String[] render(String type, Map<String, Object> d) {
@@ -56,8 +63,26 @@ public final class EventCatalog {
             case "CREDIT_ISSUED" -> new String[]{"You have a NepalGo Travel Credit",
                     money(d, "amountUsd") + " Travel Credit (" + str(d, "creditCode", "") + ") is in your wallet, valid until "
                             + str(d, "expiresOn", "—") + ". Apply it to your next trip request."};
+            case "TRIP_REQUESTED" -> new String[]{"New trip request: " + voucher,
+                    str(d, "partySize", "?") + " " + ("1".equals(str(d, "partySize", "")) ? "person" : "people") + " · " + dest
+                            + " · arriving " + str(d, "arrivalDate", "?") + extras(d)
+                            + ". Check availability, price the bill, then Approve & Issue."};
+            case "BOOKING_WITHDRAWN" -> new String[]{"Request withdrawn: " + voucher,
+                    "The customer withdrew " + dest + " (arriving " + str(d, "arrivalDate", "?")
+                            + ") before paying. The dates are released; nothing to refund."};
+            case "BOOKING_CANCELLED" -> new String[]{"Trip cancelled: " + voucher,
+                    "The customer cancelled " + dest + " (arriving " + str(d, "arrivalDate", "?") + "), tier "
+                            + str(d, "tier", "?") + ". Cash refund " + money(d, "cashRefundUsd") + ", travel credit "
+                            + money(d, "creditUsd") + ". A cash refund appears in Refund requests."};
             default -> throw new IllegalArgumentException("Unknown event type " + type);
         };
+    }
+
+    private static String extras(Map<String, Object> d) {
+        String g = "true".equals(str(d, "guide", "")) ? "guide" : null;
+        String p = "true".equals(str(d, "porter", "")) ? "porter" : null;
+        if (g == null && p == null) return "";
+        return " · " + (g != null && p != null ? "guide + porter" : g != null ? g : p) + " requested";
     }
 
     private static String amount(Map<String, Object> d) {

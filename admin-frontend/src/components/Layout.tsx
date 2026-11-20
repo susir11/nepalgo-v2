@@ -37,10 +37,10 @@ export default function Layout() {
   const nav = useNavigate();
   const location = useLocation();   // new boundary per page: one crash doesn't stick across navigation
   const isSuper = session?.role === "SUPER_ADMIN";
-  const alerts = useGet<any>("/api/admin/notifications");
+  const alerts = useGet<any>("/api/admin/notifications", { refreshMs: 30_000 });   // badge counts up live
   const unread = alerts.data?.unread ?? 0;
   // Same query key as the Reviews page uses, so moderating there updates this badge too.
-  const reviewQueue = useGet<any>("/api/admin/reviews?status=PENDING&page=0&size=20");
+  const reviewQueue = useGet<any>("/api/admin/reviews?status=PENDING&page=0&size=20", { refreshMs: 60_000 });
   const pendingReviews = reviewQueue.data?.pendingCount ?? 0;
   return (
     <div className="flex min-h-full flex-col md:flex-row">

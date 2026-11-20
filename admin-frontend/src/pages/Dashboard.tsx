@@ -1,14 +1,19 @@
 import { Link } from "react-router";
 import { useGet } from "../lib/hooks";
 import { Badge, Card, ErrorBox, Loading, PageHeader, StatusBadge, Table, Td } from "../components/ui";
-import { date, usd } from "../lib/format";
+import { date, dateTime, usd } from "../lib/format";
 
 // Spec 15.1: on login, show what needs a human RIGHT NOW so nothing sits
 // unnoticed in a queue nobody happened to open today.
 export default function Dashboard() {
-  const stats = useGet<Record<string, number>>("/api/admin/bookings/stats");
-  const refunds = useGet<any[]>("/api/admin/refund-requests?status=PENDING");
-  const urgent = useGet<any>("/api/admin/bookings?sort=urgency&size=20&page=0");
+  // Live: refreshed every 30 s while this tab is visible, so a request sent from the app shows up by itself.
+  const live = { refreshMs: 30_000 };
+  const stats = useGet<Record<string, number>>("/api/admin/bookings/stats", live);
+  const refunds = useGet<any[]>("/api/admin/refund-requests?status=PENDING", live);
+  const urgent = useGet<any>("/api/admin/bookings?sort=urgency&size=20&page=0", live);
+  // Newest first, separate from the urgency queue (which is oldest-first on purpose: longest wait gets served first).
+  const fresh = useGet<any>("/api/admin/bookings?status=PENDING_APPROVAL&sort=newest&size=5&page=0", live);
+  const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < 24 * 3600 * 1000;
   const s = stats.data ?? {};
   // Only bookings a human must act on; finished ones (cancelled, withdrawn…) don't belong on "Today".
   const actionable = (urgent.data?.content ?? [])
@@ -35,6 +40,22 @@ export default function Dashboard() {
           </Link>
         ))}
       </div>
+
+      <Card className="mt-6" title="New trip requests" actions={<Link className="text-sm font-semibold text-primary" to="/bookings?status=PENDING_APPROVAL&sort=newest">All requests →</Link>}>
+        {fresh.isLoading ? <Loading /> : !(fresh.data?.content ?? []).length ? <p className="py-6 text-center text-sm text-muted">No new requests waiting for review.</p> : (
+          <Table head={["Voucher", "Destination", "People", "Arrival", "Received"]}>
+            {fresh.data.content.map((b: any) => (
+              <tr key={b.id} className="hover:bg-background/40">
+                <Td><Link className="font-semibold text-primary" to={`/bookings/${b.id}`}>{b.voucherCode}</Link>{" "}{isNew(b.createdAt) && <Badge tone="brand">New</Badge>}</Td>
+                <Td>{b.destinationNameSnapshot}</Td>
+                <Td>{b.partySize}</Td>
+                <Td>{date(b.arrivalDate)}</Td>
+                <Td>{dateTime(b.createdAt)}</Td>
+              </tr>
+            ))}
+          </Table>
+        )}
+      </Card>
 
       <Card className="mt-6" title="Most urgent bookings" actions={<Link className="text-sm font-semibold text-primary" to="/bookings">Open queue →</Link>}>
         {urgent.isLoading ? <Loading /> : actionable.length === 0 ? <p className="py-6 text-center text-sm text-muted">Nothing waiting on you. 🎉</p> : (

@@ -47,4 +47,31 @@ class EventCatalogTest {
     void unknownEventIsRejected() {
         assertThatThrownBy(() -> EventCatalog.render("HACKED", Map.of())).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void customerActionsAlertStaffInAppOnly() {
+        for (String type : new String[]{"TRIP_REQUESTED", "BOOKING_WITHDRAWN", "BOOKING_CANCELLED"}) {
+            assertThat(EventCatalog.EVENTS.get(type).audience()).as(type).isEqualTo(Notification.Audience.ADMIN);
+            assertThat(EventCatalog.EVENTS.get(type).channels()).as(type + ": no e-mail/push, in-app alert only").isEmpty();
+        }
+    }
+
+    @Test
+    void tripRequestAlertSaysWhatStaffNeed() {
+        String[] c = EventCatalog.render("TRIP_REQUESTED", java.util.Map.of("voucherCode", "NEPALGO-ABC123",
+                "destinationName", "Everest Base Camp Trek", "partySize", 20, "arrivalDate", "2026-11-25",
+                "guide", true, "porter", false));
+        assertThat(c[0]).isEqualTo("New trip request: NEPALGO-ABC123");
+        assertThat(c[1]).contains("20 people").contains("Everest Base Camp Trek").contains("arriving 2026-11-25")
+                .contains("guide requested").doesNotContain("porter");
+        assertThat(EventCatalog.render("TRIP_REQUESTED", java.util.Map.of("partySize", 1))[1]).startsWith("1 person");
+    }
+
+    @Test
+    void cancellationAlertShowsTheMoney() {
+        String[] c = EventCatalog.render("BOOKING_CANCELLED", java.util.Map.of("voucherCode", "NEPALGO-X",
+                "tier", "D30_59", "cashRefundUsd", "0.00", "creditUsd", "840.00"));
+        assertThat(c[0]).isEqualTo("Trip cancelled: NEPALGO-X");
+        assertThat(c[1]).contains("tier D30_59").contains("Cash refund $0.00").contains("travel credit $840.00");
+    }
 }

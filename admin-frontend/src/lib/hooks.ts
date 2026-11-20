@@ -3,10 +3,14 @@ import { api, ApiError } from "./api";
 
 // GET helper: the query key IS the path, so invalidating "/api/admin/bookings"
 // refreshes every list/detail that starts with it.
-export function useGet<T = any>(path: string | null, opts: { allow404?: boolean } = {}) {
+// refreshMs: poll while the tab is visible (alerts, dashboard) so new customer actions
+// appear without a reload. Paused in background tabs, so an idle portal costs nothing.
+export function useGet<T = any>(path: string | null, opts: { allow404?: boolean; refreshMs?: number } = {}) {
   return useQuery<T | null>({
     queryKey: [path],
     enabled: !!path,
+    refetchInterval: opts.refreshMs ?? false,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       try {
         return await api<T>(path!);
